@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="腾讯 TEG 多模态数据工程师（子公司编制） 面试准备">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>腾讯 TEG · 多模态数据工程师（子公司编制）</title>
+  <link rel="icon" href="../../assets/favicon.svg">
+  <link rel="stylesheet" href="../../assets/style.css">
+</head>
+<body><main class="detail-shell">
+      <header class="detail-header"><a href="../../">← 返回面试列表</a><span>2026-08-31 18:30–19:00</span></header>
+      <div class="detail-title">
+        <p>腾讯 TEG</p><h1>多模态数据工程师（子公司编制）</h1>
+        <div class="meta-line"><span>北京</span><span>20–35K·14薪</span><span>3–5年</span><span>本科</span></div>
+        <p class="positioning">这是数据生产与交付岗位。面试重点不是复杂算法，而是 Python/Linux、批处理可靠性、数据质量、版本和追溯。</p>
+        <div class="detail-links"><a class="resume-link" href="../../topics/multimodal-data/">多模态数据专题 →</a></div>
+      </div>
+      <nav class="anchor-nav" aria-label="本页目录">
+        <a href="#jd">JD</a><a href="#tech">知识点</a><a href="#talk">怎么说</a><a href="#gaps">不足与补强</a>
+        <a href="#star">STAR</a><a href="#questions">常见问题</a><a href="#asks">反问</a>
+      </nav>
+      <section class="detail-section" id="jd"><h2>JD</h2><div class="content-group"><h3>工作内容</h3><ul><li>处理图片、音频、视频、文本、网页和 3D 数据</li><li>清洗、转换、切分、合并、入库和批量刷库</li><li>按规范交付并完成基础质量校验</li><li>维护数据版本与元信息，保证可追溯、可复用</li></ul></div><div class="content-group"><h3>基础要求</h3><ul><li>熟悉 Linux 和 Python</li><li>了解 CSV、JSON 及常见多媒体格式</li><li>能根据文档和示例代码快速实现</li><li>按进度推进并及时同步问题</li></ul></div><div class="content-group"><h3>加分项</h3><ul><li>Spark、Hive、Ray、SQL、Docker</li><li>Pillow、OpenCV、FFmpeg</li><li>SoX、Librosa、PyDub、ASR/TTS</li><li>HTML 解析、文本规范化、3D 数据</li></ul></div></section>
+      <section class="detail-section" id="tech"><h2>JD 需要了解的知识点</h2><div class="tech-table"><div class="tech-row">
+    <h3><a href="https://arrow.apache.org/docs/python/" target="_blank" rel="noreferrer">Python + PyArrow / Parquet</a></h3>
+    <p><strong>需要了解：</strong>Schema、列式存储、分区、批量扫描、类型校验，以及媒体 URI 与结构化元数据的组织方式。</p>
+    <p class="knowledge-summary"><strong>知识点总结：</strong>Parquet 适合保存大规模数据清单和质量字段；媒体文件保存在对象存储，通过稳定 ID、URI 和哈希关联。</p>
+  </div><div class="tech-row">
+    <h3><a href="https://spark.apache.org/docs/latest/api/python/index.html" target="_blank" rel="noreferrer">Spark / PySpark</a></h3>
+    <p><strong>需要了解：</strong>DataFrame、分区、shuffle、join、聚合、数据倾斜、广播表和幂等分区写入。</p>
+    <p class="knowledge-summary"><strong>知识点总结：</strong>Spark 是成熟的分布式批处理引擎，适合完成大规模清洗、去重、聚合和刷库。</p>
+  </div><div class="tech-row">
+    <h3><a href="https://docs.ray.io/en/latest/data/data.html" target="_blank" rel="noreferrer">Ray Data</a></h3>
+    <p><strong>需要了解：</strong>Dataset block、map_batches、ActorPool、CPU/GPU 资源配置和批推理流水线。</p>
+    <p class="knowledge-summary"><strong>知识点总结：</strong>Ray Data 适合用 Python 串联多模态预处理与模型推理，并统一调度 CPU 和 GPU 算子。</p>
+  </div><div class="tech-row">
+    <h3><a href="https://docs.nvidia.com/nemo/curator/about" target="_blank" rel="noreferrer">NeMo Curator</a></h3>
+    <p><strong>需要了解：</strong>规则过滤、模型过滤、精确/模糊/语义去重、隐私识别和数据处理记录。</p>
+    <p class="knowledge-summary"><strong>知识点总结：</strong>NeMo Curator 展示了多模态训练数据从读取、过滤、去重到质量筛选的完整工程框架。</p>
+  </div><div class="tech-row">
+    <h3><a href="https://ffmpeg.org/documentation.html" target="_blank" rel="noreferrer">FFmpeg / OpenCV / Librosa</a></h3>
+    <p><strong>需要了解：</strong>媒体探测、转码、抽帧、分辨率与 FPS、音频重采样、响度、静音、削波和声学特征。</p>
+    <p class="knowledge-summary"><strong>知识点总结：</strong>这组工具覆盖视频、图像和音频的基础处理，是多模态数据流水线的算子层。</p>
+  </div></div></section>
+      <section class="detail-section" id="talk"><h2>结合简历怎么说</h2><article class="talk-block"><h3>多模态数据清洗</h3><dl>
+    <div><dt>简历证据</dt><dd>做过音质、ASR、VAD、歌词对齐和多模态标注流水线，筛选 120 万条微调数据。</dd></div>
+    <div><dt>建议说法</dt><dd>我做过完整的音频训练数据链路，不只是单个清洗脚本。我的做法是先定义输入 schema 和质量分层，再把音质、ASR、VAD、对齐等节点串起来，失败样本单独落盘，最后用抽检和分布统计验收。图像和视频的算子不同，但 schema、幂等、追溯和质量门禁的方法可以直接迁移。</dd></div>
+  </dl></article><article class="talk-block"><h3>稳定批处理</h3><dl>
+    <div><dt>简历证据</dt><dd>评测流水线包含数据集管理、Docker 环境、任务调度、指标计算和结果归档。</dd></div>
+    <div><dt>建议说法</dt><dd>我会把任务设计成可分片、可重跑、可恢复：稳定样本 ID 作为幂等键，记录处理版本和参数，checkpoint 保存完成分片，失败队列单独重试，最终交付前做数量、schema、重复率和质量阈值校验。</dd></div>
+  </dl></article><article class="talk-block"><h3>数据版本与追溯</h3><dl>
+    <div><dt>简历证据</dt><dd>维护 Benchmark 版本并把 PASS/FAIL/BLOCK 接入 GitLab CI。</dd></div>
+    <div><dt>建议说法</dt><dd>我会同时版本化原始清单、处理代码、配置和输出 manifest。任何结果都能回溯到源文件、算子版本和运行批次；规则变化时通过固定回归集比较，避免刷库后才发现质量漂移。</dd></div>
+  </dl></article></section>
+      <section class="detail-section" id="gaps"><h2>不足与补强</h2><article class="gap-row"><h3>Kafka 生产经验不够强</h3>
+    <p><strong>面试表达：</strong>不冒充资深 Kafka 使用者；用真实的任务调度、幂等、重试和数据交付经验回答工程语义。</p>
+    <p><strong>可完成练习：</strong>本地用 Redpanda/Kafka 做一个小任务：生产文件事件，消费者用 event_id 幂等写入 SQLite/Parquet，手动重启验证重复消费和位点恢复。完成后可说“我做过一个可恢复消费验证”。</p>
+  </article><article class="gap-row"><h3>图像/视频经验少于音频</h3>
+    <p><strong>面试表达：</strong>强调多模态质量框架可迁移，同时明确算子层需要补。</p>
+    <p><strong>可完成练习：</strong>取 100 张图和 10 段视频，用 Pillow/OpenCV/FFmpeg 输出尺寸、编码、时长、FPS、抽帧和感知哈希，生成统一 manifest 与质量报告。</p>
+  </article><article class="gap-row"><h3>Spark 集群调优证据有限</h3>
+    <p><strong>面试表达：</strong>只讲掌握 PySpark 和数据处理，不声称做过超大集群调优。</p>
+    <p><strong>可完成练习：</strong>用 PySpark 构造倾斜 key，对比 repartition、salting 和广播 join，记录 stage、shuffle 和输出文件数量。</p>
+  </article></section>
+      <section class="detail-section" id="star"><h2>STAR 示例</h2><article class="star-block"><h3>120 万条音频训练数据 Pipeline</h3><dl>
+    <div><dt>S</dt><dd>原始音乐数据来源多、质量差异大，人工逐条检查不可行。</dd></div><div><dt>T</dt><dd>建立可批量运行、可解释的质量筛选链路，为微调交付稳定数据。</dd></div>
+    <div><dt>A</dt><dd>定义 D1/D2 分层标准；串联音质、ASR、VAD、歌词对齐和多模态标注；保留失败原因与抽检结果；按版本交付。</dd></div><div><dt>R</dt><dd>筛选产出 120 万条 Finetune 数据，模型 MOS 提升 0.5。</dd></div>
+  </dl></article><article class="star-block"><h3>评测流水线质量门禁</h3><dl>
+    <div><dt>S</dt><dd>模型和配置频繁变化，结果缺少统一可比标准。</dd></div><div><dt>T</dt><dd>让每次改动都能自动验证并回溯。</dd></div>
+    <div><dt>A</dt><dd>建立三阶段评测、Benchmark 版本管理、Docker 环境和 PASS/FAIL/BLOCK 门禁，并对 Bad Case 归因。</dd></div><div><dt>R</dt><dd>改动具备可追踪、可复现的准入依据，抗干扰率从 70% 提升到 93%。</dd></div>
+  </dl></article></section>
+      <section class="detail-section" id="questions"><h2>常见问题</h2><ol class="question-list"><li><h3>批任务跑到 70% 失败，怎样恢复且避免重复写入？</h3><p>稳定 ID；分片；checkpoint；幂等 upsert；失败队列；重试上限；完成后对账。</p></li><li><h3>如何给多模态样本设计统一元信息？</h3><p>公共字段 + modality-specific 字段；源 URI/哈希；许可和隐私；算子版本；质量分；父子样本关系。</p></li><li><h3>怎样判断数据质量？</h3><p>schema/文件有效性、内容规则、统计分布、模型评分、去重、人工分层抽检、下游效果验证。</p></li><li><h3>Spark 数据倾斜如何排查？</h3><p>看 stage 和 task 时长；定位重 key；采样；salting、预聚合、广播 join、调整分区。</p></li><li><h3>Linux 上任务变慢怎样排查？</h3><p>先区分 CPU、内存、磁盘 I/O、网络；top/vm_stat、iostat、df/du、lsof、日志和最近变更。</p></li><li><h3>需求不清楚怎样避免返工？</h3><p>样例输入输出；边界和错误策略；小样验收；冻结 schema/版本；批量前质量闸门。</p></li></ol></section>
+      <section class="detail-section" id="asks"><h2>建议反问</h2><ul><li>合同主体、汇报线、绩效和内部流动机制分别是什么？</li><li>主要模态、日均数据量和交付 SLA 是什么？</li><li>技术栈以 Spark、Ray 还是内部平台为主？</li><li>返工最多发生在哪一环，岗位怎样衡量做得好？</li></ul></section>
+      <footer><a href="../../">← 返回面试列表</a></footer>
+    </main></body>
+</html>

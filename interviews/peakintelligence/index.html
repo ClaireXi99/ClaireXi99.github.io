@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="峰瞰智能 AI 应用开发工程师 面试准备">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>峰瞰智能 · AI 应用开发工程师</title>
+  <link rel="icon" href="../../assets/favicon.svg">
+  <link rel="stylesheet" href="../../assets/style.css">
+</head>
+<body><main class="detail-shell">
+      <header class="detail-header"><a href="../../">← 返回面试列表</a><span>2026-09-03（时间待定）</span></header>
+      <div class="detail-title">
+        <p>峰瞰智能</p><h1>AI 应用开发工程师</h1>
+        <div class="meta-line"><span>杭州</span><span>12–20K·13薪</span><span>0–3年</span><span>硕士</span></div>
+        <p class="positioning">这是企业 AI 应用交付岗位：把 RAG、Agent 和工作流接入客户现有系统，并完成接口、权限、测试、部署、排障和可复用沉淀。</p>
+        <div class="detail-links"></div>
+      </div>
+      <nav class="anchor-nav" aria-label="本页目录">
+        <a href="#jd">JD</a><a href="#tech">知识点</a><a href="#talk">怎么说</a><a href="#gaps">不足与补强</a>
+        <a href="#star">STAR</a><a href="#questions">常见问题</a><a href="#asks">反问</a>
+      </nav>
+      <section class="detail-section" id="jd"><h2>JD</h2><div class="content-group"><h3>工作内容</h3><ul><li>澄清业务、数据、接口、权限、部署和验收</li><li>开发适配模块、API 连接器、数据脚本、RAG、Agent/Workflow</li><li>完成轻量前端、管理页或 Demo</li><li>对接系统、文件和身份权限，写技术文档</li><li>测试、联调、部署、上线和日志排障</li><li>控制定制边界，沉淀组件、模板、Skill 和 Workflow</li></ul></div><div class="content-group"><h3>要求</h3><ul><li>Python，HTTP/REST/JSON/SDK，数据库和文件处理</li><li>大模型 API、Prompt、RAG、知识库、Agent、Workflow、Function Calling</li><li>Linux、Git、日志和基础网络排错</li><li>Vue/React/TypeScript 基础</li><li>能把模糊需求拆成可开发、可测试、可验收任务</li><li>可接受必要的短期出差</li></ul></div><div class="content-group"><h3>加分项</h3><ul><li>SaaS/ERP/CRM/OA 等企业集成</li><li>Docker、Nginx、CI/CD、私有化、云或 Kubernetes</li><li>SSO、OAuth、LDAP、RBAC</li><li>Dify、Coze、n8n、LangChain、LlamaIndex、MCP</li><li>AI Coding、PoC、客户现场与生产排障</li></ul></div></section>
+      <section class="detail-section" id="tech"><h2>JD 需要了解的知识点</h2><div class="tech-table"><div class="tech-row">
+    <h3><a href="https://fastapi.tiangolo.com/" target="_blank" rel="noreferrer">FastAPI + Pydantic</a></h3>
+    <p><strong>需要了解：</strong>异步接口、依赖注入、请求/响应 schema、错误码、Webhook、鉴权和 OpenAPI 文档。</p>
+    <p class="knowledge-summary"><strong>知识点总结：</strong>FastAPI 与 Pydantic 组成清晰的 Python 接口层，适合连接企业系统、模型服务和工作流。</p>
+  </div><div class="tech-row">
+    <h3><a href="https://docs.langchain.com/oss/python/langgraph/overview" target="_blank" rel="noreferrer">LangGraph</a></h3>
+    <p><strong>需要了解：</strong>状态图、节点与边、checkpoint、持久执行、人工审批、恢复、重放和多 Agent 编排。</p>
+    <p class="knowledge-summary"><strong>知识点总结：</strong>LangGraph 用显式状态管理长流程 Agent，使执行过程可观察、可恢复并支持人工参与。</p>
+  </div><div class="tech-row">
+    <h3><a href="https://dify.ai/" target="_blank" rel="noreferrer">Dify / n8n</a></h3>
+    <p><strong>需要了解：</strong>可视化工作流、模型与工具连接、变量传递、条件分支、Webhook、知识库和运营配置。</p>
+    <p class="knowledge-summary"><strong>知识点总结：</strong>低代码工作流平台适合快速完成 PoC、客户演示和可配置的业务流程交付。</p>
+  </div><div class="tech-row">
+    <h3><a href="https://modelcontextprotocol.io/specification/2026-07-28/server/tools" target="_blank" rel="noreferrer">MCP 2026 规范</a></h3>
+    <p><strong>需要了解：</strong>Tools、Resources、Prompts、JSON Schema、能力协商、传输方式和 OAuth 授权。</p>
+    <p class="knowledge-summary"><strong>知识点总结：</strong>MCP 用统一协议连接模型与外部能力，核心价值是标准接口、清晰 schema 和受控授权。</p>
+  </div><div class="tech-row">
+    <h3><a href="https://opentelemetry.io/blog/2026/genai-observability/" target="_blank" rel="noreferrer">OpenTelemetry GenAI 语义约定</a></h3>
+    <p><strong>需要了解：</strong>Trace、span、attribute、模型调用、工具调用、时延、Token、成本和错误状态。</p>
+    <p class="knowledge-summary"><strong>知识点总结：</strong>OpenTelemetry 将 Agent 与模型链路统一到标准化可观测体系，支持性能分析、问题定位和成本统计。</p>
+  </div><div class="tech-row">
+    <h3><a href="https://docs.ragas.io/en/stable/" target="_blank" rel="noreferrer">Ragas / LangSmith 评测</a></h3>
+    <p><strong>需要了解：</strong>评测数据集、检索质量、groundedness、回答质量、实验对比、回归和结果追踪。</p>
+    <p class="knowledge-summary"><strong>知识点总结：</strong>评测平台把 RAG 与 Agent 的质量转化为可重复实验和可持续版本回归。</p>
+  </div></div></section>
+      <section class="detail-section" id="talk"><h2>结合简历怎么说</h2><article class="talk-block"><h3>RAG 与企业业务落地</h3><dl>
+    <div><dt>简历证据</dt><dd>从 0 到 1 构建 50 万 token 接入网 RAG 助手，根因定位 60%→93%。</dd></div>
+    <div><dt>建议说法</dt><dd>我做 RAG 会从业务任务和验收指标开始，而不是先选框架。我会确认知识源、权限、更新频率和失败代价，再拆检索、重排、生成、引用和拒答；每层都有日志和评测，最后用真实任务验收。</dd></div>
+  </dl></article><article class="talk-block"><h3>Agent/Workflow</h3><dl>
+    <div><dt>简历证据</dt><dd>开发歌词多节点工作流，配置 Native Agent Skill，并做 Trajectory 评测。</dd></div>
+    <div><dt>建议说法</dt><dd>我有工作流和 Agent 两种形态的实际经验。对确定流程我优先用显式节点和状态；对开放任务才让模型规划。关键工具调用需要 schema、权限、超时、重试、幂等和人工审批，避免把 Demo 直接当生产系统。</dd></div>
+  </dl></article><article class="talk-block"><h3>接口和交付质量</h3><dl>
+    <div><dt>简历证据</dt><dd>Docker、GitLab CI、MCP 插件、日志与自动化诊断。</dd></div>
+    <div><dt>建议说法</dt><dd>我会把接口约定、错误码、超时重试、鉴权和验收样例先固定，再联调。项目中的定制逻辑通过配置、适配器和 feature flag 隔离，能沉淀的连接器和工作流回收到公共层，避免客户分支长期分叉。</dd></div>
+  </dl></article></section>
+      <section class="detail-section" id="gaps"><h2>不足与补强</h2><article class="gap-row"><h3>轻量前端证据不够集中</h3>
+    <p><strong>面试表达：</strong>不声称资深前端；强调能修改 React/TypeScript 页面并与 API 联调。</p>
+    <p><strong>可完成练习：</strong>做一个 React 管理页：上传文档、查看索引状态、发起问答、显示引用与 trace_id；完成后可作为真实 Demo。</p>
+  </article><article class="gap-row"><h3>SSO/LDAP/RBAC 生产经验有限</h3>
+    <p><strong>面试表达：</strong>先讲清认证、授权、租户和审计的区别，不把 OAuth 会用等同于安全专家。</p>
+    <p><strong>可完成练习：</strong>给 FastAPI Demo 加 JWT/OAuth mock、tenant_id、角色权限和审计日志；画出企业 IdP→网关→应用→资源的流程。</p>
+  </article><article class="gap-row"><h3>客户现场交付经验不突出</h3>
+    <p><strong>面试表达：</strong>用跨团队需求澄清、联调排障和质量门禁经验迁移。</p>
+    <p><strong>可完成练习：</strong>写一份 PoC 验收表：范围、数据、接口、权限、环境、性能、质量、故障恢复、交付物和变更边界。</p>
+  </article><article class="gap-row"><h3>Kubernetes 深度有限</h3>
+    <p><strong>面试表达：</strong>主讲 Docker、环境配置和服务排障；K8s 只讲 Deployment/Service/ConfigMap/Secret/日志等基础。</p>
+    <p><strong>可完成练习：</strong>把 Demo 容器化并写 docker-compose；有余力再部署到本地 kind/minikube，演示滚动更新和配置注入。</p>
+  </article></section>
+      <section class="detail-section" id="star"><h2>STAR 示例</h2><article class="star-block"><h3>接入网 RAG 助手</h3><dl>
+    <div><dt>S</dt><dd>领域知识分散，故障根因定位依赖专家，回答需要来源可追踪。</dd></div><div><dt>T</dt><dd>构建可用的领域助手并证明效果。</dd></div>
+    <div><dt>A</dt><dd>整理 50 万 token 知识库，搭建检索链路，优化 Prompt，设计引用和三阶段评测，并比较 SFT 与 Base+RAG。</dd></div><div><dt>R</dt><dd>根因定位准确率 60%→93%，抗干扰率 70%→93%。</dd></div>
+  </dl></article><article class="star-block"><h3>Agent Workflow 可靠性</h3><dl>
+    <div><dt>S</dt><dd>歌词生成包含多步骤，端到端失败难定位。</dd></div><div><dt>T</dt><dd>把工作流做成可观察、可评测和可迭代的系统。</dd></div>
+    <div><dt>A</dt><dd>拆意图、主题、风格、生成、格式节点，加入节点监控；对 Native Agent 检查 Skill 路由、参数和 SOP。</dd></div><div><dt>R</dt><dd>端到端通过率 72%→91%，路由准确率 78%→96%。</dd></div>
+  </dl></article></section>
+      <section class="detail-section" id="questions"><h2>常见问题</h2><ol class="question-list"><li><h3>怎样把模糊客户需求变成任务？</h3><p>目标/用户/现状；数据与权限；接口和环境；成功指标；非目标；风险；拆成可演示、可测试、可验收任务。</p></li><li><h3>RAG 效果差怎样排查？</h3><p>query→召回→重排→上下文→Prompt→模型→引用逐层 trace；固定样本；区分无知识、检索错、生成错。</p></li><li><h3>Agent 工具调用如何保证安全？</h3><p>最小权限；schema 校验；allowlist；幂等；审批；超时重试；审计；敏感数据脱敏；回滚。</p></li><li><h3>如何避免客户定制变成独立分支？</h3><p>配置优先；adapter/connector；插件接口；feature flag；公共核心与项目层分离；回收共性能力。</p></li><li><h3>接口联调失败怎么排查？</h3><p>请求 ID；DNS/TLS/网络；认证授权；schema；超时重试；服务日志；依赖状态；最小复现。</p></li><li><h3>PoC 如何定义验收？</h3><p>业务任务成功率、质量集、延迟/成本、权限、故障恢复、可操作性、范围外事项和签字标准。</p></li></ol></section>
+      <section class="detail-section" id="asks"><h2>建议反问</h2><ul><li>客户项目与产品研发的时间比例是多少？短期出差通常多频繁？</li><li>现有平台的核心技术栈和扩展机制是什么？</li><li>怎样定义可接受定制，谁有权拒绝不可维护需求？</li><li>股权、项目分红、试用期和现金薪资的具体规则是什么？</li></ul></section>
+      <footer><a href="../../">← 返回面试列表</a></footer>
+    </main></body>
+</html>

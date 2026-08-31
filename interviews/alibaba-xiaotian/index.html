@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="阿里晓天（乌鸦科技） 多模态评测专家（技术方向） 面试准备">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>阿里晓天（乌鸦科技） · 多模态评测专家（技术方向）</title>
+  <link rel="icon" href="../../assets/favicon.svg">
+  <link rel="stylesheet" href="../../assets/style.css">
+</head>
+<body><main class="detail-shell">
+      <header class="detail-header"><a href="../../">← 返回面试列表</a><span>2026-09-02 19:00</span></header>
+      <div class="detail-title">
+        <p>阿里晓天（乌鸦科技）</p><h1>多模态评测专家（技术方向）</h1>
+        <div class="meta-line"><span>杭州</span><span>15–30K</span><span>3–5年</span><span>本科</span></div>
+        <p class="positioning">岗位同时要数据构造、标注生产管理和模型评测。重点是文生图、文生视频与 VLM，不只是跑通用 Benchmark。</p>
+        <div class="detail-links"><a class="resume-link" href="../../topics/multimodal-data/">多模态数据专题 →</a></div>
+      </div>
+      <nav class="anchor-nav" aria-label="本页目录">
+        <a href="#jd">JD</a><a href="#tech">知识点</a><a href="#talk">怎么说</a><a href="#gaps">不足与补强</a>
+        <a href="#star">STAR</a><a href="#questions">常见问题</a><a href="#asks">反问</a>
+      </nav>
+      <section class="detail-section" id="jd"><h2>JD</h2><div class="content-group"><h3>工作内容</h3><ul><li>构造高质量多模态数据并与算法团队对齐需求</li><li>设计文生图、文生视频和 VLM 的标注生产</li><li>建立内容质量管理体系并优化组织与交付流程</li><li>设计专业评测方案并提供评测服务</li><li>数据清洗、蒸馏、合成等数据工程</li></ul></div><div class="content-group"><h3>要求</h3><ul><li>影视、设计、艺术或图像视频工程背景优先</li><li>对质量和数据变化敏锐，能推动策略落地</li><li>熟悉标注工具、Python 和多模态常见模型</li><li>能做目标、规划和团队管理</li><li>强协作、组织和复杂问题解决能力</li></ul></div></section>
+      <section class="detail-section" id="tech"><h2>JD 需要了解的知识点</h2><div class="tech-table"><div class="tech-row">
+    <h3><a href="https://arxiv.org/abs/2407.11691" target="_blank" rel="noreferrer">VLMEvalKit / EvalScope / lmms-eval</a></h3>
+    <p><strong>需要了解：</strong>数据集适配、Prompt 模板、推理后端、结果解析、评分器、并行执行和报告汇总。</p>
+    <p class="knowledge-summary"><strong>知识点总结：</strong>通用评测框架把模型、数据集和评分协议解耦，便于复现、横向比较和持续回归。</p>
+  </div><div class="tech-row">
+    <h3><a href="https://mmmu-benchmark.github.io/" target="_blank" rel="noreferrer">MMMU / MMBench / Video-MME</a></h3>
+    <p><strong>需要了解：</strong>各基准覆盖的能力、数据格式、题型、评分协议、视频时长和能力切片。</p>
+    <p class="knowledge-summary"><strong>知识点总结：</strong>公开基准提供专业推理、细粒度视觉理解和长视频理解的基础坐标，业务黄金集承接真实场景验证。</p>
+  </div><div class="tech-row">
+    <h3><a href="https://github.com/Vchitect/VBench" target="_blank" rel="noreferrer">VBench</a></h3>
+    <p><strong>需要了解：</strong>主体一致性、背景一致性、运动平滑、动态程度、画质、美学和文本一致等分维度指标。</p>
+    <p class="knowledge-summary"><strong>知识点总结：</strong>VBench 将视频生成质量拆成独立维度，适合比较模型版本并定位具体能力变化。</p>
+  </div><div class="tech-row">
+    <h3><a href="https://www.testingstandards.net/uploads/7/6/6/4/76643089/standards_2014edition.pdf" target="_blank" rel="noreferrer">人评协议与 Pairwise</a></h3>
+    <p><strong>需要了解：</strong>Rubric、正反锚点、盲评、随机顺序、重复样本、双标、IAA 和专家仲裁。</p>
+    <p class="knowledge-summary"><strong>知识点总结：</strong>结构化人评把主观质量转成可执行标准，并通过一致性数据验证标注体系。</p>
+  </div><div class="tech-row">
+    <h3><a href="https://docs.nvidia.com/nemo/curator/about" target="_blank" rel="noreferrer">数据血缘与主动抽样</a></h3>
+    <p><strong>需要了解：</strong>来源、许可、处理版本、样本父子关系、置信度、不确定性采样和失败簇采样。</p>
+    <p class="knowledge-summary"><strong>知识点总结：</strong>数据血缘保证可追溯，主动抽样把标注资源集中到高价值长尾和模型分歧样本。</p>
+  </div></div></section>
+      <section class="detail-section" id="talk"><h2>结合简历怎么说</h2><article class="talk-block"><h3>多模态评测</h3><dl>
+    <div><dt>简历证据</dt><dd>修复 lmms-eval 的 MMMU open-ended 评分问题；为 EvalScope 接入 olmOCR-Bench。</dd></div>
+    <div><dt>建议说法</dt><dd>我对多模态评测不只停留在使用框架。我修过 MMMU 开放题评分偏差，也完整适配过文档转录 Benchmark，包含渲染、去重、评分规则和 35 个单测。这让我很重视数据格式、评分协议和实现细节对结论的影响。</dd></div>
+  </dl></article><article class="talk-block"><h3>数据构造与清洗</h3><dl>
+    <div><dt>简历证据</dt><dd>音频多模态数据 Pipeline 产出 120 万条微调数据。</dd></div>
+    <div><dt>建议说法</dt><dd>我会从训练目标反推数据规范：定义样本单元、覆盖维度、质量层级和拒收原因，再把清洗、自动打标、人工复核和版本追踪接起来。音频项目验证了这套方法能落到百万级交付。</dd></div>
+  </dl></article><article class="talk-block"><h3>标注质量</h3><dl>
+    <div><dt>简历证据</dt><dd>LLM-as-Judge 与人工标签校准，一致率 89%。</dd></div>
+    <div><dt>建议说法</dt><dd>标注规则必须先经过试标和分歧分析。我的做法是把总分拆成可观察维度，给正反锚点，插入重复样本，计算一致性，并把争议样本升级给专家，而不是简单多数票。</dd></div>
+  </dl></article></section>
+      <section class="detail-section" id="gaps"><h2>不足与补强</h2><article class="gap-row"><h3>视觉/视频作品与艺术背景不足</h3>
+    <p><strong>面试表达：</strong>不编造审美专业背景；用多模态评测框架贡献、音频内容质量和科学评测方法证明迁移能力。</p>
+    <p><strong>可完成练习：</strong>选 30 个提示词，用两个文生图模型生成结果，设计主体、属性、关系、文字、风格、瑕疵六维 rubric；做盲评和 pairwise，一页总结分歧。</p>
+  </article><article class="gap-row"><h3>文生视频直接项目不足</h3>
+    <p><strong>面试表达：</strong>先理解时序一致、运动合理、镜头、闪烁、文本一致和安全等失效模式。</p>
+    <p><strong>可完成练习：</strong>使用公开视频样本跑 VBench 的部分维度，再人工复核 20 条，比较自动指标与人评不一致的案例。</p>
+  </article><article class="gap-row"><h3>正式团队管理证据有限</h3>
+    <p><strong>面试表达：</strong>讲清跨团队协作和质量标准推动，不虚构直接下属。</p>
+    <p><strong>可完成练习：</strong>写一份 1000 条标注项目方案：角色、试标、日抽检、双标比例、一致率阈值、返工与验收。</p>
+  </article></section>
+      <section class="detail-section" id="star"><h2>STAR 示例</h2><article class="star-block"><h3>MMMU 评分偏差修复</h3><dl>
+    <div><dt>S</dt><dd>lmms-eval 的 MMMU open-ended 模式丢失候选列表，导致评分结论偏差。</dd></div><div><dt>T</dt><dd>定位根因并修复，同时保证不破坏其他模式。</dd></div>
+    <div><dt>A</dt><dd>复现失败路径，检查数据流和评分输入，修复候选传递并补验证。</dd></div><div><dt>R</dt><dd>修复被上游合并，避免开放题评测产生系统性偏差。</dd></div>
+  </dl></article><article class="star-block"><h3>olmOCR-Bench 接入 EvalScope</h3><dl>
+    <div><dt>S</dt><dd>文档转录评测有复杂渲染、去重和多类评分规则。</dd></div><div><dt>T</dt><dd>把原始 Benchmark 可靠接入通用评测框架。</dd></div>
+    <div><dt>A</dt><dd>实现 PDF 页渲染、按文档页去重、五类规则迁移和 35 个单测。</dd></div><div><dt>R</dt><dd>完成 2226 行适配并被 EvalScope 合并。</dd></div>
+  </dl></article></section>
+      <section class="detail-section" id="questions"><h2>常见问题</h2><ol class="question-list"><li><h3>如何评测文生图？</h3><p>提示词拆解；主体/属性/关系/文字/风格；图像质量；安全；自动指标 + VLM Judge + 人评；切片报告。</p></li><li><h3>如何评测文生视频？</h3><p>文本一致、主体/背景时序一致、运动合理、镜头、闪烁、画质、审美、安全；人评验证自动指标。</p></li><li><h3>怎样设计标注规范？</h3><p>任务目标；维度定义；正反例和边界例；试标；分歧分析；一致率；专家升级；版本化。</p></li><li><h3>自动打标怎样控制错误放大？</h3><p>置信度分层；金标校准；难例人工；亚组抽检；漂移检测；保留模型/Prompt/版本。</p></li><li><h3>如何把 Bad Case 反哺训练数据？</h3><p>失败簇→能力标签→缺口统计→定向采样/合成→去重与质量控制→训练→固定回归。</p></li><li><h3>Benchmark 分数上升但业务变差怎么办？</h3><p>检查污染、数据分布、指标代理失效、切片差异和实现版本；以业务黄金集和人评复核。</p></li></ol></section>
+      <section class="detail-section" id="asks"><h2>建议反问</h2><ul><li>文生图、文生视频和 VLM 当前各占工作量多少？</li><li>岗位更偏评测方案、数据生产管理，还是亲自写数据/评测代码？</li><li>已有标注平台和供应商体系是什么？质量责任怎样划分？</li><li>“团队人员管理”是正式带人还是项目制协同？</li></ul></section>
+      <footer><a href="../../">← 返回面试列表</a></footer>
+    </main></body>
+</html>
