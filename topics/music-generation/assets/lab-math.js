@@ -1,0 +1,10 @@
+(function(root){
+ 'use strict';
+ const softmax=w=>{const m=Math.max(...w),a=w.map(v=>Math.exp(v-m)),s=a.reduce((x,y)=>x+y,0);return a.map(v=>v/s);};
+ class AR{constructor(){this.reset();}reset(){this.w=[.6,.1,.3].map(Math.log);this.n=0;this.history=[this.loss()];this.last=null;}prob(){return softmax(this.w);}loss(){return -Math.log(this.prob()[1]);}step(lr=.6){const p=this.prob(),before=this.w.slice(),g=p.map((v,i)=>v-(i===1?1:0));this.w=this.w.map((w,i)=>w-lr*g[i]);this.n++;this.last={p,before,g,lr};this.history.push(this.loss());return this;}sample(r=Math.random()){const p=this.prob();let c=0;for(let i=0;i<p.length;i++){c+=p[i];if(r<c)return [8,17,42][i];}return 42;}}
+ class Flow{constructor(){this.reset();}reset(){this.z0=[.2,-.4];this.z1=[.8,.2];this.w=[.1,0];this.n=0;this.history=[this.loss()];this.last=null;}target(){return this.z1.map((v,i)=>v-this.z0[i]);}at(t){return this.z0.map((v,i)=>(1-t)*v+t*this.z1[i]);}loss(){const v=this.target();return this.w.reduce((s,w,i)=>s+(w-v[i])**2,0)/2;}step(lr=.25){const g=this.w.map((w,i)=>w-this.target()[i]);this.last={before:this.w.slice(),g,lr};this.w=this.w.map((w,i)=>w-lr*g[i]);this.n++;this.history.push(this.loss());return this;}integrate(steps=4){let z=this.z0.slice();const points=[z.slice()];for(let k=0;k<steps;k++){z=z.map((v,i)=>v+this.w[i]/steps);points.push(z.slice());}return points;}}
+ function vlq(n){let bytes=[n&127];while(n>>=7)bytes.unshift((n&127)|128);return bytes;}
+ function midiBytes(notes,bpm=120){const ppq=480,tempo=Math.round(60000000/bpm),track=[0,255,81,3,(tempo>>16)&255,(tempo>>8)&255,tempo&255,0,192,0];for(const note of notes){track.push(0,144,note,90,...vlq(ppq),128,note,0);}track.push(0,255,47,0);const n=track.length;return new Uint8Array([77,84,104,100,0,0,0,6,0,0,0,1,1,224,77,84,114,107,(n>>>24)&255,(n>>>16)&255,(n>>>8)&255,n&255,...track]);}
+ function noteTimes(notes,bpm){return notes.map((pitch,i)=>({pitch,start:i*60/bpm,duration:60/bpm,velocity:90}));}
+ const api={softmax,AR,Flow,midiBytes,noteTimes};root.MusicLab=api;if(typeof module!=='undefined'&&module.exports)module.exports=api;
+})(typeof globalThis!=='undefined'?globalThis:this);

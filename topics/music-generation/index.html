@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex, nofollow, noarchive"><meta name="description" content="用具体音频、样本、loss 和参数更新理解音乐生成。"><title>文字 → 纯音乐 · 音乐生成实验课</title><link rel="icon" href="data:,"><link rel="stylesheet" href="assets/style.css"><script src="assets/lab-math.js" defer></script><script src="assets/app.js" defer></script></head><body data-page="index"><a class="skip" href="#main">跳到正文</a><header class="masthead"><a class="brand" href="index.html">音乐生成<span>实验课</span></a><span class="edition">数据 → 训练 → 推理 → 评测 <small>2026.09.09</small></span></header><nav class="main-nav" aria-label="课程"><a href="index.html" aria-current="page">文字 → 纯音乐</a><a href="accompaniment.html" >清唱 → 伴奏</a><a href="lyrics.html" >歌词 → 歌曲</a><a href="midi.html" >MIDI → 音乐</a><a href="evaluation.html" >听 / 看评测</a><a href="models.html" >模型与 JD</a><a href="sources.html" >来源</a></nav><main id="main"><article><p><span class="badge">重点 01 / 文字 → 纯音乐</span></p>
+<h1>一句描述，怎么变成一段音乐？</h1>
+<p class="intro">音频剪干净，配上描述，压成 token。模型猜错哪个 token，就对那个位置算 loss、更新参数。</p>
+
+<h2>① 业界的数据，里面实际是什么？</h2>
+<p><strong>MusicCaps：5,521 条、每段 10 秒。</strong> 每行是录音 ID、起止时间、乐器 / 风格列表、音乐人写的描述；音频需另行取得。它同时包含有人声与器乐的片段。<a href="https://huggingface.co/datasets/google/MusicCaps">数据卡</a></p>
+<pre><code class="language-text">按其字段构造一行教学样本：
+录音 ID：demo_042       start_s：40       end_s：50
+caption：明亮的键盘器乐，均匀鼓点，无人声。
+
+取得对应音频 → 截取第 40–50 秒 → 得到 10 秒 WAV
+</code></pre>
+<p>真实训练更大：MusicGen 使用约 <strong>2 万小时授权音乐</strong>，带文字描述、BPM 和标签；MusicCaps 用于其评测。这里借它理解样本结构，不把它当成 MusicGen 的预训练库。<a href="https://arxiv.org/html/2306.05284v3">MusicGen §3.2</a></p>
+<h2 id="clean">② 洗完后，这一条变成什么？</h2>
+<p>下面是程序合成的教学音频。原件首尾各有 1 秒空白，内容是 8 秒器乐。</p>
+<div class="two"><div class="audio-box"><h3>原始：10 秒 / 48 kHz / 双声道</h3><p>数组形状 [2, 480000]</p><audio controls preload="none" aria-label="原始十秒音频"><source src="assets/audio/raw-10s-stereo.wav" type="audio/wav"></audio></div><div class="audio-box"><h3>清洗：8 秒 / 32 kHz / 单声道</h3><p>数组形状 [1, 256000]</p><audio controls preload="none" aria-label="清洗后八秒音频"><source src="assets/audio/clean-8s-mono.wav" type="audio/wav"></audio></div></div>
+
+<figure><img src="assets/plots/crop.svg" alt="十秒原始波形，蓝色范围是保留的一到九秒"><figcaption>剪 1–9 秒 → 下混单声道 → 重采样。乐句中的休止符不剪。</figcaption></figure>
+
+<table>
+<thead>
+<tr>
+<th>这一批有 4 条</th>
+<th>发现的问题</th>
+<th>处理</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>042：键盘 + 鼓</td>
+<td>首尾空白，描述正确</td>
+<td>剪成 8 秒，保留</td>
+</tr>
+<tr>
+<td>043：与 042 同录音</td>
+<td>只是文件格式不同</td>
+<td>去重，不另放测试集</td>
+</tr>
+<tr>
+<td>044：描述写“无人声”</td>
+<td>听到哼唱</td>
+<td>纯音乐任务剔除，或改标签转其他任务</td>
+</tr>
+<tr>
+<td>045：波形严重削平</td>
+<td>放大造成破音</td>
+<td>剔除；调低音量修不回失真</td>
+</tr>
+</tbody>
+</table>
+<p>交付的核心是一对：</p>
+<pre><code class="language-json">{
+  &quot;text&quot;: &quot;明亮的键盘器乐，均匀鼓点，无人声。&quot;,
+  &quot;audio&quot;: &quot;clean-8s-mono.wav&quot;,
+  &quot;duration&quot;: 8,
+  &quot;sample_rate&quot;: 32000
+}
+</code></pre>
+<h3>有音频、没描述，怎么合成文字配对？</h3>
+<pre><code class="language-text">同一条 8 秒音频
+听审 / 标签器：器乐、键盘、鼓；节拍检测：120 BPM
+        ↓ 只写已经验证的属性
+描述 A：“明亮的键盘器乐，均匀鼓点，无人声。”
+描述 B：“120 BPM，键盘主奏，带鼓的纯音乐。”
+        ↓
+得到 2 条 text–audio 配对，但只有 1 条独立音频
+</code></pre>
+<p>再做一次<strong>保音高变速 1.25 倍</strong>：8 秒变 6.4 秒、120 BPM 变 150；描述 B 的 BPM 必须改成 150。标签转描述可参考 LP-MusicCaps，音频增强后同步修改属性可参考 Mustango。<a href="https://arxiv.org/abs/2307.16372">LP-MusicCaps</a> · <a href="https://arxiv.org/html/2311.08355v3">Mustango</a></p>
+<p>描述不能凭空补“悲伤、小提琴”。合成描述后要回听校验；同一原曲的改写、切片、变速版都放同一训练 / 测试分区。</p>
+<h2>③ 喂给 MusicGen 的不是 WAV 文件名</h2>
+<div class="steps"><div><b>文字条件</b><strong>一句描述 → 向量</strong><small>文字编码器表示乐器与风格</small></div><div><b>音频目标</b><strong>8 × 32,000</strong><small>256,000 个波形采样值</small></div><div><b>EnCodec 压缩</b><strong>4 × 400</strong><small>4 码本 × 50 帧/秒 × 8 秒</small></div><div><b>Transformer</b><strong>预测目标 token</strong><small>输入文字与前面的音频 token</small></div></div>
+
+<pre><code class="language-text">示意 token ID（未运行真实 EnCodec）
+码本 1：[8, 17, 42, ...]     约 400 个时间位置
+码本 2：[91, 203, 66, ...]
+码本 3：[...]
+码本 4：[...]
+
+放大码本 1 的一个位置：
+输入 = 文字向量 + 历史 [8]
+目标 = 17
+</code></pre>
+<p>token 是音频码本编号，<strong>不等于歌词或一个音符</strong>。真实 MusicGen 交错多个码本，对有效位置求平均 loss；下面只演示一个位置。<a href="https://github.com/facebookresearch/audiocraft/blob/main/docs/MUSICGEN.md">实现说明</a></p>
+<h2 id="train">④ 它怎么“往正确方向学”？</h2>
+<div class="lab" id="ar-lab"><div class="lab-head"><div><h3>已知正确答案：token 17</h3><p class="micro">真实计算的三分类 softmax 玩具模型。固定输入 x=1，logits=W×x。</p></div><div class="actions"><button class="primary" id="ar-step">训练 1 步</button><button id="ar-many">训练 20 步</button><button id="ar-reset">重置</button></div></div><div class="lab-grid"><div><div class="prob-row"><span>token 8</span><div class="prob-track"><div class="prob-fill" id="prob-0"></div></div><span id="prob-label-0"></span></div><div class="prob-row target"><span>17 ✓</span><div class="prob-track"><div class="prob-fill" id="prob-1"></div></div><span id="prob-label-1"></span></div><div class="prob-row"><span>token 42</span><div class="prob-track"><div class="prob-fill" id="prob-2"></div></div><span id="prob-label-2"></span></div><p class="micro">起初正解概率只有 10%。点击训练，观察它上升。</p></div><div class="readouts"><div class="readout"><small>正确 token 的概率</small><strong id="ar-prob"></strong></div><div class="readout"><small>loss = −ln(p)</small><strong id="ar-loss"></strong></div><div class="readout"><small>参数已更新</small><strong id="ar-count"></strong></div><div class="readout"><small>当前正确类梯度 p − 1</small><strong id="ar-gradient"></strong></div></div></div><div class="math-line" id="ar-math"></div><svg class="chart-svg" id="ar-chart" viewBox="0 0 700 145" role="img" aria-label="随训练下降的交叉熵曲线"></svg><div class="infer-box"><span class="mode-label">推理：不给正确答案 17</span><p>只给文字与历史 [8]，按当前概率抽一个 token。学过后更容易抽到 17，但不一定每次都抽到。</p><button id="ar-sample">采样一次</button><div class="infer-result" id="ar-result" aria-live="polite">先训练，再采样；也可以在训练前比较。</div></div></div>
+
+<p>第一步：<code>p=0.10 → loss=2.303 → 梯度=−0.90</code>。减去负梯度会抬高正确类权重。真实网络将梯度传回 Transformer 的参数；<strong>目标音频不变，模型参数改变</strong>。</p>
+<h2>⑤ 完整推理：从文字一路生成到声音</h2>
+<div class="steps"><div><b>给条件</b><strong>“键盘、鼓、无人声”</strong><small>不提供目标音频</small></div><div><b>生成</b><strong>逐步产生多码本 token</strong><small>历史来自模型自己的输出</small></div><div><b>解码</b><strong>tokens → EnCodec → WAV</strong><small>得到新的纯音乐</small></div></div>
+
+<p><strong>标签错会直接教错：</strong> 若音频有人声，描述却写“无人声”，模型就会把两者一起学习。这就是清洗、筛选、打标影响模型的具体位置。</p></article><details class="notes"><summary>补充我的数据 / 我的例子 <span id="note-status" role="status"></span></summary><label for="note">记录自己的输入、目标、处理办法或一个错误样本。</label><textarea id="note" rows="5" maxlength="200000" placeholder="我的原始数据是……&#10;洗完的一条样本是……&#10;这个问题是怎么验证的……"></textarea><div class="actions"><button id="export-notes">导出笔记 .md</button><button id="backup-notes">备份 .json</button><label class="button" for="import-notes">导入备份</label><input type="file" id="import-notes" accept=".json" hidden><button id="legacy-notes" hidden>导出旧版笔记</button></div><p class="micro">保存在当前浏览器，定期导出。换浏览器或地址前先备份。</p></details><footer><a href="accompaniment.html">接着看：清唱 → 伴奏 →</a><a href="../../#topics">全部学习专题</a><a href="sources.html">论文与数据来源</a></footer></main></body></html>

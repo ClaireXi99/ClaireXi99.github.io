@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex, nofollow, noarchive"><meta name="description" content="用具体音频、样本、loss 和参数更新理解音乐生成。"><title>清唱 → 伴奏 · 音乐生成实验课</title><link rel="icon" href="data:,"><link rel="stylesheet" href="assets/style.css"><script src="assets/lab-math.js" defer></script><script src="assets/app.js" defer></script></head><body data-page="accompaniment"><a class="skip" href="#main">跳到正文</a><header class="masthead"><a class="brand" href="index.html">音乐生成<span>实验课</span></a><span class="edition">数据 → 训练 → 推理 → 评测 <small>2026.09.09</small></span></header><nav class="main-nav" aria-label="课程"><a href="index.html" >文字 → 纯音乐</a><a href="accompaniment.html" aria-current="page">清唱 → 伴奏</a><a href="lyrics.html" >歌词 → 歌曲</a><a href="midi.html" >MIDI → 音乐</a><a href="evaluation.html" >听 / 看评测</a><a href="models.html" >模型与 JD</a><a href="sources.html" >来源</a></nav><main id="main"><article><p><span class="badge">重点 02 / 清唱、哼唱、旋律 → 伴奏</span></p>
+<h1>保留这段清唱，给它配一段伴奏</h1>
+<p class="intro">输入人声，目标是同一时段的器乐。先把这种“正确配对”造出来，再让模型学旋律与伴奏的关系。</p>
+
+<h2>① 一首多轨歌，就能拆出一条训练样本</h2>
+<p><strong>MUSDB18：150 首，100 首训练、50 首测试，约 10 小时。</strong> HQ 版提供 44.1 kHz 双声道 WAV，含人声、鼓、贝斯、其他四类 stem（分轨）。下面借它的文件结构造样本；它原本是分离评测数据集。<a href="https://sigsep.github.io/datasets/musdb.html">数据说明</a></p>
+<pre><code class="language-text">一首歌/
+  vocals.wav  ───────────────────→ 条件：清唱
+  drums.wav + bass.wav + other.wav → 目标：伴奏
+  mixture.wav                     → 完整混音，辅助核对
+
+同一个采样点的加法示意：
+鼓 0.10 + 贝斯 0.03 + 其他 0.07 = 伴奏 0.20
+伴奏 0.20 + 人声 0.20           = 混音 0.40
+</code></pre>
+<p><strong>只有混音？</strong> 用分离模型得到 <code>估计人声 + 估计伴奏</code>，再筛漏声、失真、错位。AnyAccomp 的公开方案用约 <strong>8,000 小时</strong>歌曲构造清唱 / 伴奏配对；这类自动拆轨是伪标签，不能当成无误差原始分轨。<a href="https://arxiv.org/html/2509.14052v1">AnyAccomp §3.1</a></p>
+<h2>② 听一条：输入、目标、合成结果</h2>
+<div class="two"><div class="audio-box"><h3>条件：8 秒“哼唱”</h3><p>程序合成的人声类音色，模拟旋律输入。</p><audio controls preload="none" aria-label="八秒合成哼唱"><source src="assets/audio/vocal-24k.wav" type="audio/wav"></audio></div><div class="audio-box"><h3>目标：8 秒伴奏</h3><p>键盘 + 贝斯 + 鼓；与输入共用时间轴。</p><audio controls preload="none" aria-label="八秒伴奏目标"><source src="assets/audio/accompaniment-24k.wav" type="audio/wav"></audio></div></div>
+
+<figure><img src="assets/plots/melody.svg" alt="哼唱八秒音高轨迹，半秒一个音，从C4开始"><figcaption>第 0–0.5 秒唱 C4，第 0.5–1 秒唱 D4。伴奏必须跟这条时间轴走。</figcaption></figure>
+
+<pre><code class="language-json">{
+  &quot;song_id&quot;: &quot;demo_001&quot;, &quot;start&quot;: 0, &quot;end&quot;: 8,
+  &quot;condition_audio&quot;: &quot;vocal-24k.wav&quot;,
+  &quot;target_audio&quot;: &quot;accompaniment-24k.wav&quot;,
+  &quot;sample_rate&quot;: 24000
+}
+</code></pre>
+<p>两条波形都是 <code>1 × 192000</code>，因为 <code>8 秒 × 24000</code>。配对清洗只记三件事：</p>
+<table>
+<thead>
+<tr>
+<th>实际问题</th>
+<th>怎么改数据</th>
+<th>不改会教出什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>只裁掉人声开头 0.25 秒</td>
+<td>两轨共用起止时间；检查分离输出延迟</td>
+<td>伴奏总慢半拍</td>
+</tr>
+<tr>
+<td>目标伴奏残留人声</td>
+<td>重新分离或剔除；听“伴奏单轨”</td>
+<td>生成伴奏时又唱出一层人声</td>
+</tr>
+<tr>
+<td>同一首歌切出 30 段</td>
+<td>按整首歌分训练 / 测试，再切段</td>
+<td>测试集看起来很强，换新歌就差</td>
+</tr>
+</tbody>
+</table>
+<p><strong>增强也要成对：</strong> 给人声升 2 个半音，目标伴奏也升 2 个半音；给两轨都变速 1.25 倍，8 秒都变成 6.4 秒。只处理一边，配对关系就坏了。增强后的样本仍跟原曲放同一数据分区。</p>
+<h2>③ AnyAccomp 这一类模型，吃什么、猜什么？</h2>
+<div class="steps"><div><b>条件侧</b><strong>人声 → chroma → VQ</strong><small>把随时间变化的音高信息压成条件 token</small></div><div><b>目标侧</b><strong>伴奏 → Mel 频谱</strong><small>横轴时间、纵轴频带、数值是能量</small></div><div><b>Flow 模型</b><strong>预测“往哪改”</strong><small>看到条件、当前噪声状态和时间 t</small></div><div><b>声音输出</b><strong>频谱 → 声码器 → WAV</strong><small>声码器把表示还原成波形</small></div></div>
+
+<p>论文先提取 <strong>24 维、50 Hz 的 chroma</strong>：8 秒得到 <code>24 × 400</code>，再经 VQ-VAE 编成条件。它的生成主干是 Transformer，但训练目标是 <strong>Flow Matching</strong>，不是下一个 token 的交叉熵。<a href="https://arxiv.org/html/2509.14052v1">模型 §3</a></p>
+<h2>④ 不猜 token，怎么计算 loss？</h2>
+<p>把整张目标频谱缩成两个数来算。真实模型有很多时频位置；本例只学习一个固定样本、两个可训练参数。</p>
+<pre><code class="language-text">目标 z₁ = [0.8,  0.2]        抽到的噪声 z₀ = [0.2, -0.4]
+训练时随机选 t=0.5
+当前状态 zₜ = (1-t)z₀ + tz₁ = [0.5, -0.1]
+正确速度 v* = z₁-z₀         = [0.6,  0.6]
+
+模型看到：[人声条件，zₜ，t] → 猜速度 [0.1, 0.0]
+MSE = ((0.1-0.6)² + (0.0-0.6)²) / 2 = 0.305
+</code></pre>
+<div class="lab" id="fm-lab"><div class="lab-head"><div><h3>把预测速度学到 [0.6, 0.6]</h3><p class="micro">玩具模型 v=W；点击真的更新 W。真实网络还会随条件、状态与 t 改变预测。</p></div><div class="actions"><button class="primary" id="fm-step">训练 1 步</button><button id="fm-many">训练 10 步</button><button id="fm-reset">重置</button></div></div><label for="fm-time">观察训练路径：t = <strong id="fm-t"></strong></label><input id="fm-time" type="range" min="0" max="100" value="50"><div class="vector-grid"><div><small>从中间位置学怎么走：zₜ</small><b id="fm-zt"></b></div><div><small>模型当前预测速度</small><b id="fm-v"></b></div><div><small>固定正确速度</small><b>[0.600, 0.600]</b></div></div><div class="readouts"><div class="readout"><small>速度 MSE</small><strong id="fm-loss"></strong></div><div class="readout"><small>参数已更新</small><strong id="fm-count"></strong></div></div><div class="math-line" id="fm-math"></div><svg class="chart-svg" id="fm-chart" viewBox="0 0 700 145" role="img" aria-label="速度均方误差随训练下降"></svg><div class="infer-box"><span class="mode-label">推理：没有目标频谱 z₁</span><p>给人声条件与噪声，从 t=0 开始。每次走 Δt=0.25：z ← z + 0.25 × 模型预测速度。</p><button id="fm-infer">用当前参数走 4 步</button><div class="infer-result" id="fm-result" aria-live="polite">点击采样，沿当前学到的速度走 4 步。</div></div></div>
+
+<p>初始速度只会走到 <code>[0.3, −0.4]</code>；学好后走到约 <code>[0.8, 0.2]</code>。训练是<strong>更新速度预测器的参数</strong>；推理是<strong>固定参数，反复更新生成状态</strong>。本例省略论文中的微小终点噪声和辅助表征损失，也没有运行真实声码器。</p>
+<h2>⑤ 最后如何与清唱合成？</h2>
+<pre><code class="language-text">用户清唱 → 提取旋律条件 → 生成伴奏频谱 → 声码器输出伴奏
+保留的用户清唱 + 生成的伴奏 → 对齐时间、调音量 → 混音
+</code></pre>
+<div class="audio-box"><h3>听“清唱 + 伴奏”的组合</h3><p>这里播放前面两条程序合成的示例轨道之和，用于理解混音；不是上面两个参数生成的音频。</p><audio controls preload="none" aria-label="哼唱与伴奏混音"><source src="assets/audio/mixture.wav" type="audio/wav"></audio></div>
+
+<p>只给哼唱时，不一定知道完整和声与风格；同一旋律可以有多种合理伴奏。评测重点是<strong>节拍跟得上、和声合适、不漏人声</strong>，不要求复刻唯一参考录音。<a href="evaluation.html">听三种失败例子 →</a></p></article><details class="notes"><summary>补充我的数据 / 我的例子 <span id="note-status" role="status"></span></summary><label for="note">记录自己的输入、目标、处理办法或一个错误样本。</label><textarea id="note" rows="5" maxlength="200000" placeholder="我的原始数据是……&#10;洗完的一条样本是……&#10;这个问题是怎么验证的……"></textarea><div class="actions"><button id="export-notes">导出笔记 .md</button><button id="backup-notes">备份 .json</button><label class="button" for="import-notes">导入备份</label><input type="file" id="import-notes" accept=".json" hidden><button id="legacy-notes" hidden>导出旧版笔记</button></div><p class="micro">保存在当前浏览器，定期导出。换浏览器或地址前先备份。</p></details><footer><a href="lyrics.html">接着看：歌词 → 歌曲 →</a><a href="../../#topics">全部学习专题</a><a href="sources.html">论文与数据来源</a></footer></main></body></html>

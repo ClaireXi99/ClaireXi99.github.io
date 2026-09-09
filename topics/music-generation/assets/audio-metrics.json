@@ -1,0 +1,30 @@
+{
+  "illustrative_only": true,
+  "audio_source": "deterministic procedural synthesis; no model outputs",
+  "sr": 32000,
+  "duration_s": 8,
+  "raw": {
+    "sr": 48000,
+    "channels": 2,
+    "duration_s": 10,
+    "shape": [
+      2,
+      480000
+    ]
+  },
+  "clean": {
+    "sr": 32000,
+    "channels": 1,
+    "duration_s": 8,
+    "shape": [
+      1,
+      256000
+    ]
+  },
+  "clip_ratio_good": 0.0,
+  "clip_ratio_bad": 0.1111875,
+  "band_6_10k_drop_db": 19.99999648516647,
+  "known_delay_ms": 250,
+  "known_vocal_amplitude_gain": 0.35,
+  "pair_rms": "playback pairs RMS-matched; plots use pre-match signal"
+}

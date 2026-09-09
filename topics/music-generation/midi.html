@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex, nofollow, noarchive"><meta name="description" content="用具体音频、样本、loss 和参数更新理解音乐生成。"><title>MIDI → 音乐 · 音乐生成实验课</title><link rel="icon" href="data:,"><link rel="stylesheet" href="assets/style.css"><script src="assets/lab-math.js" defer></script><script src="assets/app.js" defer></script></head><body data-page="midi"><a class="skip" href="#main">跳到正文</a><header class="masthead"><a class="brand" href="index.html">音乐生成<span>实验课</span></a><span class="edition">数据 → 训练 → 推理 → 评测 <small>2026.09.09</small></span></header><nav class="main-nav" aria-label="课程"><a href="index.html" >文字 → 纯音乐</a><a href="accompaniment.html" >清唱 → 伴奏</a><a href="lyrics.html" >歌词 → 歌曲</a><a href="midi.html" aria-current="page">MIDI → 音乐</a><a href="evaluation.html" >听 / 看评测</a><a href="models.html" >模型与 JD</a><a href="sources.html" >来源</a></nav><main id="main"><article><p><span class="badge">基本任务 04 / 音符序列 → MIDI → 声音</span></p>
+<h1>MIDI 是“弹什么”，WAV 是“听到什么”</h1>
+<p class="intro">MIDI 记录音高、起止、力度和乐器事件。先学着写音符，再用音源演奏，就得到声音。</p>
+
+<h2>① 数据长什么样？</h2>
+<p><strong>MAESTRO v3：1,276 段、198.7 小时</strong>钢琴演奏，每段同时有 MIDI 和音频，时间对齐精度约 3 ms。训练“写音符”可用 MIDI；训练“听音乐转谱”则拿音频作输入、MIDI 作目标。<a href="https://magenta.withgoogle.com/datasets/maestro">官方数据页</a></p>
+<p>下面自己造 8 个音，120 BPM，每拍 <code>60/120=0.5 秒</code>：</p>
+<table>
+<thead>
+<tr>
+<th>音名</th>
+<th style="text-align: right;">MIDI 编号</th>
+<th style="text-align: right;">起始</th>
+<th style="text-align: right;">持续</th>
+<th style="text-align: right;">力度</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C4</td>
+<td style="text-align: right;">60</td>
+<td style="text-align: right;">0.0 秒</td>
+<td style="text-align: right;">0.5 秒</td>
+<td style="text-align: right;">90</td>
+</tr>
+<tr>
+<td>E4</td>
+<td style="text-align: right;">64</td>
+<td style="text-align: right;">0.5 秒</td>
+<td style="text-align: right;">0.5 秒</td>
+<td style="text-align: right;">90</td>
+</tr>
+<tr>
+<td>G4</td>
+<td style="text-align: right;">67</td>
+<td style="text-align: right;">1.0 秒</td>
+<td style="text-align: right;">0.5 秒</td>
+<td style="text-align: right;">90</td>
+</tr>
+<tr>
+<td>C5</td>
+<td style="text-align: right;">72</td>
+<td style="text-align: right;">1.5 秒</td>
+<td style="text-align: right;">0.5 秒</td>
+<td style="text-align: right;">90</td>
+</tr>
+</tbody>
+</table>
+<p>后四音是 <code>67、64、62、60</code>。清洗时：检查音符结束是否晚于开始、去掉损坏事件、保留速度与踏板信息；同一乐曲的不同演奏尽量同组切分，避免背熟曲子后“测出高分”。MAESTRO 已提供按作品隔离的划分。</p>
+<h2>② 模型到底在预测哪一个？</h2>
+<pre><code class="language-text">简化为只预测音高（假定时长与力度固定）：
+输入 [60, 64] → 正确下一个音 67
+p(67)=0.20 → loss=−ln(0.20)=1.609 → 反向传播 → 提高 67 的概率
+
+真实事件序列还要学时长和力度，例如：
+VELOCITY_90 → NOTE_ON_60 → TIME_SHIFT_500ms → NOTE_OFF_60
+→ NOTE_ON_64 → TIME_SHIFT_500ms → NOTE_OFF_64 → ...
+</code></pre>
+<p>训练时用真实历史预测后续事件；推理时给一个开头，模型接着写音符。若任务改为<strong>旋律配和弦</strong>，条件是旋律音符，目标是同一时间段的和弦 / 伴奏音符轨；若条件增加“爵士”，就需要带对应风格的训练配对。事件编码是示意，不是所有 MIDI 模型的统一格式。</p>
+<h2>③ 改几个数字，听音乐怎样变化</h2>
+<div class="lab" id="midi-lab"><div class="lab-head"><div><h3>8 个音，真的生成 MIDI 文件</h3><p class="micro">试听使用简单三角波音源；下载的 .mid 可换钢琴、吉他等音源播放。</p></div><div class="actions"><button class="primary" id="midi-play">播放</button><button id="midi-stop">停止</button><button id="midi-download">下载当前 .mid</button></div></div><div class="two"><div><label for="midi-bpm">速度：<strong id="midi-bpm-value"></strong></label><input type="range" id="midi-bpm" min="60" max="180" step="10" value="120"></div><div><label for="midi-transpose">整体移调：<strong id="midi-transpose-value"></strong></label><input type="range" id="midi-transpose" min="-12" max="12" step="1" value="0"></div></div><svg id="midi-roll" class="chart-svg piano-roll" viewBox="0 0 720 195" role="img" aria-label="可调整速度和音高的八音钢琴卷帘图"></svg><p>当前总时长：<strong id="midi-duration"></strong>。纵轴是 MIDI 音高编号，横轴是秒。</p><details class="extra"><summary>展开当前的 8 条音符记录</summary><pre id="midi-events"></pre></details><p id="midi-status" class="micro" role="status"></p></div>
+
+<p>把 120 调成 <strong>60 BPM</strong>：每音从 0.5 秒变 1 秒，总长从 4 秒变 8 秒，音高不变。升 <strong>12 半音</strong>：60 变 72，高一个八度，时长不变。<strong>这正是构造可控生成样本时要同步更新的标签。</strong></p>
+<p><a href="assets/audio/example-120bpm.mid">直接下载默认的 120 BPM 示例 MIDI</a>。</p>
+<h2>④ 怎么评？先区分转写和创作</h2>
+<p><strong>转写有标准答案：</strong> 参考 8 个音，预测 9 个；规定“音高相同且起音误差 ≤50 ms”才算匹配，若一对一匹配 7 个，则精确率 <code>7/9=77.8%</code>、召回率 <code>7/8=87.5%</code>、F1 <code>82.4%</code>。这个示例没有评结束时间与力度。</p>
+<p><strong>创作没有唯一答案：</strong> 给 C 大调、120 BPM、8 拍，检查调性、时长、节奏约束，再听旋律是否自然；不要拿逐音符准确率惩罚合理的新旋律。</p></article><details class="notes"><summary>补充我的数据 / 我的例子 <span id="note-status" role="status"></span></summary><label for="note">记录自己的输入、目标、处理办法或一个错误样本。</label><textarea id="note" rows="5" maxlength="200000" placeholder="我的原始数据是……&#10;洗完的一条样本是……&#10;这个问题是怎么验证的……"></textarea><div class="actions"><button id="export-notes">导出笔记 .md</button><button id="backup-notes">备份 .json</button><label class="button" for="import-notes">导入备份</label><input type="file" id="import-notes" accept=".json" hidden><button id="legacy-notes" hidden>导出旧版笔记</button></div><p class="micro">保存在当前浏览器，定期导出。换浏览器或地址前先备份。</p></details><footer><a href="evaluation.html">接着看：听 / 看评测 →</a><a href="../../#topics">全部学习专题</a><a href="sources.html">论文与数据来源</a></footer></main></body></html>
