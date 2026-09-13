@@ -1,0 +1,52 @@
+{
+  "generated_at": "2026-09-13T16:49:11.873903+00:00",
+  "videos": {
+    "t01_happyhorse": {
+      "webm_bytes": 131510,
+      "mp4_bytes": 124078
+    },
+    "t01_wan3": {
+      "webm_bytes": 113572,
+      "mp4_bytes": 116513
+    },
+    "t02_happyhorse": {
+      "webm_bytes": 109573,
+      "mp4_bytes": 122145
+    },
+    "t02_wan3": {
+      "webm_bytes": 93508,
+      "mp4_bytes": 159019
+    },
+    "t03_wan26": {
+      "webm_bytes": 785691,
+      "mp4_bytes": 627675
+    },
+    "t03_wan3": {
+      "webm_bytes": 602035,
+      "mp4_bytes": 506067
+    },
+    "t04_happyhorse": {
+      "webm_bytes": 923418,
+      "mp4_bytes": 638096
+    },
+    "t04_wan3": {
+      "webm_bytes": 606190,
+      "mp4_bytes": 459783
+    }
+  },
+  "images": {
+    "poster:t01_happyhorse": 11770,
+    "poster:t01_wan3": 13008,
+    "poster:t02_happyhorse": 28000,
+    "poster:t02_wan3": 17642,
+    "poster:t03_wan26": 38094,
+    "poster:t03_wan3": 45422,
+    "poster:t04_happyhorse": 40610,
+    "poster:t04_wan3": 46182,
+    "input:a2ea393c5882": 18144,
+    "input:fb9e6a4f455b": 10502,
+    "input:692f0667d618": 19138,
+    "input:459a922ccce9": 5594
+  },
+  "total_bytes": 6452030
+}
