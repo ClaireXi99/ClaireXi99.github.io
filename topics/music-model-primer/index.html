@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="音乐生成模型的表示、架构、训练、推理、工程优化与 2026 年前沿进展。">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <link rel="icon" href="data:,">
+  <title>音乐生成模型：原理、训练与推理</title>
+  <style>
+    :root{
+      --ink:#17212b;--sub:#54616c;--muted:#77838d;--paper:#f5f7f9;--card:#fff;
+      --line:#dce2e7;--line-strong:#c7d0d8;--blue:#245f88;--blue-soft:#eef5f9;
+      --green:#31705a;--green-soft:#edf7f2;--amber:#8a6728;--amber-soft:#fbf5e8;
+      --purple:#65538a;--purple-soft:#f3f0f9;--red:#8a4d4d;--red-soft:#faf0f0;
+      --radius:9px;--shadow:0 10px 28px rgba(27,43,56,.055)
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth;scroll-padding-top:58px}
+    body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.56 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;-webkit-font-smoothing:antialiased}
+    a{color:var(--blue);text-underline-offset:3px}
+    .wrap{width:min(1180px,calc(100% - 40px));margin:0 auto}
+    .hero{padding:17px 0 15px;background:#fff;border-bottom:1px solid var(--line)}
+    .hero-row{display:flex;align-items:baseline;justify-content:space-between;gap:20px}
+    h1{margin:0;font-size:clamp(23px,2.7vw,29px);line-height:1.22;letter-spacing:-.024em;font-weight:700}
+    .edition{flex:none;color:var(--muted);font:11px/1.4 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.03em}
+    .nav{position:sticky;top:0;z-index:10;background:rgba(255,255,255,.96);border-bottom:1px solid var(--line);backdrop-filter:blur(12px);overflow-x:auto}
+    .nav .wrap{display:flex;gap:24px;white-space:nowrap}
+    .nav a{padding:9px 0;color:#4d5b66;text-decoration:none;font-size:12px;font-weight:700}
+    main{padding:4px 0 44px}
+    section{padding:27px 0;border-bottom:1px solid var(--line)}
+    section:last-child{border-bottom:0}
+    .section-head{display:grid;grid-template-columns:76px minmax(0,1fr);gap:10px;margin-bottom:13px}
+    .section-no{padding-top:4px;color:var(--blue);font-size:10px;font-weight:800;letter-spacing:.08em}
+    h2{margin:0;font-size:22px;line-height:1.3;letter-spacing:-.018em}
+    h3{margin:0;font-size:14px;line-height:1.4}
+    p{margin:7px 0 0}
+    .section-desc{max-width:950px;margin-top:3px;color:var(--sub);font-size:13px}
+    code,.mono{font:12px/1.46 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+    code{color:#315066}
+    .note{color:var(--muted);font-size:11px}
+
+    .model-map{border:1px solid var(--line-strong);border-radius:12px;background:#fff;box-shadow:var(--shadow);overflow:hidden}
+    .map-flow{display:grid;grid-template-columns:1.05fr 30px 1fr 30px 1fr 30px 1fr 30px 1fr;align-items:stretch;padding:12px;gap:0}
+    .map-node{padding:11px 12px;border:1px solid var(--line);border-radius:7px;background:#fff}
+    .map-node b{display:block;color:var(--blue);font-size:10px;letter-spacing:.06em}
+    .map-node strong{display:block;margin-top:3px;font-size:14px}
+    .map-node small{display:block;margin-top:3px;color:var(--muted);font-size:10px;line-height:1.42}
+    .map-node.plan{background:var(--blue-soft);border-color:#c9dce8}.map-node.render{background:var(--purple-soft);border-color:#d9d0e8}.map-node.out{background:var(--green-soft);border-color:#cbded5}
+    .arrow{display:grid;place-items:center;color:#8a99a4;font-weight:800}
+    .map-band{display:grid;grid-template-columns:120px 1fr;border-top:1px solid var(--line)}
+    .map-label{padding:9px 12px;background:#f8fafb;border-right:1px solid var(--line);color:var(--muted);font-size:10px;font-weight:800;letter-spacing:.06em}
+    .map-value{padding:8px 12px;color:#46545f;font-size:12px}
+    .map-value b{color:var(--ink)}
+    .terms{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:9px}
+    .term{padding:10px 11px;border:1px solid var(--line);border-radius:7px;background:#fff}
+    .term b{display:block;font-size:12px}.term span{display:block;margin-top:3px;color:var(--muted);font-size:10px;line-height:1.42}
+
+    .compare{width:100%;border-collapse:separate;border-spacing:0;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:#fff}
+    .compare th,.compare td{padding:9px 11px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+    .compare th:last-child,.compare td:last-child{border-right:0}.compare tr:last-child td{border-bottom:0}
+    .compare th{background:#f8fafb;color:var(--muted);font-size:10px;letter-spacing:.045em;text-transform:uppercase}
+    .compare td{color:#43515c;font-size:12px;line-height:1.5}.compare td:first-child{color:var(--ink);font-weight:700}
+    .compare .tag{display:inline-block;margin-top:4px;padding:2px 5px;border-radius:4px;background:var(--blue-soft);color:var(--blue);font-size:9px;font-weight:800}
+    .classic-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:9px}
+    .classic{padding:12px 13px;border:1px solid var(--line);border-radius:7px;background:#fff}
+    .classic-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.classic-head span{color:var(--muted);font-size:9px;font-weight:800;letter-spacing:.05em}
+    .path{margin-top:8px;padding:7px 8px;border-radius:5px;background:#f7f9fa;color:#334956;font-size:11px}
+    .classic p{color:var(--sub);font-size:11px;line-height:1.48}
+
+    .case-head{display:grid;grid-template-columns:1.12fr .88fr;gap:9px;margin-bottom:9px}
+    .case-card{padding:12px 14px;border:1px solid var(--line);border-radius:7px;background:#fff}
+    .case-card h3{display:flex;align-items:center;justify-content:space-between;gap:12px}.case-card h3 span{color:var(--blue);font-size:10px;letter-spacing:.04em}
+    .case-card p{color:#43515c;font-size:12px}.case-card strong{color:var(--ink)}
+    .numbers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:9px}
+    .number{padding:8px 9px;border:1px solid var(--line);border-radius:6px;background:#f9fafb}
+    .number b{display:block;color:var(--blue);font-size:15px}.number small{display:block;margin-top:1px;color:var(--muted);font-size:9px;line-height:1.35}
+    .pipeline{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:17px;padding:12px;border:1px solid var(--line-strong);border-radius:9px;background:#fff;counter-reset:pipe}
+    .pipe{counter-increment:pipe;position:relative;padding:10px;border:1px solid var(--line);border-radius:6px;background:#fff}
+    .pipe:not(:last-child)::after{content:"→";position:absolute;right:-14px;top:31px;color:#8f9da7;font-weight:800}
+    .pipe b::before{content:counter(pipe,decimal-leading-zero) " ";color:var(--blue);font-size:9px}.pipe b{display:block;font-size:12px}.pipe span{display:block;margin-top:4px;color:var(--muted);font-size:10px;line-height:1.42}
+    .loss-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:9px}
+    .loss{padding:12px 14px;border:1px solid var(--line);border-radius:7px;background:#fff}
+    .loss.ar{border-top:3px solid var(--blue)}.loss.flow{border-top:3px solid var(--purple)}
+    .equation{margin-top:8px;padding:9px 10px;border-radius:5px;background:#f7f9fa;color:#334956;font:11px/1.65 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;overflow-x:auto}
+    .loss p{color:var(--sub);font-size:11px}
+    .guardrail{margin-top:9px;padding:9px 12px;border-left:3px solid var(--amber);background:var(--amber-soft);color:#655432;font-size:11px}
+
+    .infer-layout{display:grid;grid-template-columns:260px 1fr;gap:10px}
+    .prompt{padding:13px 14px;border:1px solid var(--line);border-radius:7px;background:#fff}
+    .prompt dl{margin:8px 0 0}.prompt div{display:grid;grid-template-columns:52px 1fr;gap:7px;padding:6px 0;border-bottom:1px solid var(--line)}.prompt div:last-child{border-bottom:0}
+    .prompt dt{color:var(--muted);font-size:9px;font-weight:800;letter-spacing:.04em}.prompt dd{margin:0;color:#394955;font-size:11px}
+    .timeline{display:grid;grid-template-columns:8fr 30fr 24fr 30fr 22fr 6fr;height:42px;margin-top:9px;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:#fff}
+    .timeline span{display:flex;align-items:center;justify-content:center;padding:4px;border-right:1px solid #fff;color:#fff;font-size:9px;text-align:center}.timeline span:last-child{border-right:0}
+    .timeline span:nth-child(odd){background:#537c98}.timeline span:nth-child(even){background:#6b8fa7}.timeline span:nth-child(5){background:#477d68}
+    .infer-flow{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:15px;margin-top:9px}
+    .infer-step{position:relative;padding:10px 11px;border:1px solid var(--line);border-radius:6px;background:#fff}.infer-step:not(:last-child)::after{content:"→";position:absolute;right:-12px;top:30px;color:#8f9da7;font-weight:800}
+    .infer-step b{display:block;color:var(--blue);font-size:10px;letter-spacing:.04em}.infer-step strong{display:block;margin-top:3px;font-size:12px}.infer-step small{display:block;margin-top:3px;color:var(--muted);font-size:9px;line-height:1.4}
+    .knobs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:9px}.knob{padding:8px 9px;border:1px solid var(--line);border-radius:5px;background:#fff}.knob b{font-size:11px}.knob span{display:block;margin-top:2px;color:var(--muted);font-size:9px;line-height:1.4}
+
+    .jd-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+    .jd{padding:11px 12px;border:1px solid var(--line);border-radius:7px;background:#fff}
+    .jd-head{display:flex;align-items:center;gap:7px}.jd-head b{display:grid;place-items:center;width:23px;height:23px;border-radius:50%;background:var(--ink);color:#fff;font-size:9px}.jd-head h3{font-size:13px}
+    .jd p{color:var(--sub);font-size:11px}.jd code{font-size:10px}
+    .deploy{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:9px}
+    .deploy div{padding:9px 10px;border:1px solid var(--line);border-radius:6px;background:#fff}.deploy b{display:block;color:var(--blue);font-size:11px}.deploy span{display:block;margin-top:2px;color:var(--muted);font-size:9px;line-height:1.4}
+
+    .frontier{display:grid;grid-template-columns:115px 160px 1.15fr 1fr 185px;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:#fff}
+    .frontier > div{padding:9px 10px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);font-size:11px;line-height:1.45;color:#45535e}.frontier > div:nth-child(5n){border-right:0}.frontier > div:nth-last-child(-n+5){border-bottom:0}
+    .frontier .th{background:#f8fafb;color:var(--muted);font-size:9px;font-weight:800;letter-spacing:.045em;text-transform:uppercase}
+    .frontier .date{color:var(--muted);font:10px/1.4 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}.frontier .model a{font-weight:800;text-decoration:none}.frontier .model small{display:block;margin-top:2px;color:var(--muted);font-size:9px}
+    .frontier .feature{color:var(--ink);font-weight:650}.frontier .latest{background:#f1f8f4}.frontier .research{background:#f8f6fb}
+    .trend{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:9px}.trend div{padding:9px 10px;border:1px solid var(--line);border-radius:6px;background:#fff}.trend b{display:block;font-size:11px}.trend span{display:block;margin-top:2px;color:var(--muted);font-size:9px;line-height:1.4}
+    .sources{padding-top:17px;color:var(--muted);font-size:10px}.sources a{margin-right:11px;color:#536f82;white-space:nowrap}
+    .checklist{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}.check{padding:10px;border:1px solid var(--line);border-radius:6px;background:#fff}.check b{display:block;color:var(--blue);font-size:9px;letter-spacing:.05em}.check span{display:block;margin-top:3px;font-size:11px;line-height:1.42}
+    footer{padding:16px 0 25px;border-top:1px solid var(--line);color:var(--muted);font-size:10px;background:#fff}
+
+    @media(max-width:1000px){
+      .model-map,.frontier-wrap{overflow-x:auto}.map-flow{min-width:920px}
+      .terms{grid-template-columns:repeat(2,1fr)}.pipeline,.infer-flow{grid-template-columns:repeat(3,1fr)}.pipe:nth-child(3)::after,.infer-step:nth-child(3)::after{display:none}
+      .frontier{min-width:940px}
+      .jd-grid{grid-template-columns:repeat(2,1fr)}.checklist{grid-template-columns:repeat(3,1fr)}
+    }
+    @media(max-width:760px){
+      .classic-grid,.case-head,.loss-grid,.infer-layout{grid-template-columns:1fr}.deploy,.knobs,.trend{grid-template-columns:repeat(2,1fr)}
+      .compare-wrap{overflow-x:auto}.compare{min-width:720px}.frontier{grid-template-columns:105px 150px 1.15fr 1fr 180px}
+      .pipeline,.infer-flow{grid-template-columns:1fr}.pipe:not(:last-child)::after,.infer-step:not(:last-child)::after{content:"↓";right:auto;left:50%;top:auto;bottom:-17px;transform:translateX(-50%)}.pipe:nth-child(3)::after,.infer-step:nth-child(3)::after{display:block}
+    }
+    @media(max-width:560px){
+      .wrap{width:min(100% - 24px,1180px)}.hero-row{display:block}.edition{display:block;margin-top:5px}.nav .wrap{gap:19px}
+      section{padding:24px 0}.section-head{grid-template-columns:1fr;gap:3px}.section-no{padding:0}h2{font-size:20px}
+      .map-flow{min-width:0;grid-template-columns:1fr}.map-flow .arrow{display:block;padding:3px;text-align:center}.map-band{grid-template-columns:1fr}.map-label{border-right:0;border-bottom:1px solid var(--line)}
+      .terms,.numbers,.jd-grid,.deploy,.knobs,.trend,.checklist{grid-template-columns:1fr 1fr}.timeline{height:50px}.timeline span{font-size:8px}
+    }
+    @media(max-width:390px){.terms,.numbers,.jd-grid,.deploy,.knobs,.trend,.checklist{grid-template-columns:1fr}}
+    @media print{body{background:#fff}.nav{display:none}.hero{padding:20px 0}.model-map{box-shadow:none}section{break-inside:avoid}.frontier-wrap{overflow:visible}}
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="wrap hero-row">
+      <h1>音乐生成模型：原理、训练与推理</h1>
+      <span class="edition">JD KNOWLEDGE MAP · 2026-09-15</span>
+    </div>
+  </header>
+
+  <nav class="nav" aria-label="页内导航"><div class="wrap">
+    <a href="#map">模型地图</a><a href="#paradigms">生成路线</a><a href="#train">训练案例</a><a href="#infer">推理案例</a><a href="#jd">JD 覆盖</a><a href="#frontier">前沿模型</a>
+  </div></nav>
+
+  <main class="wrap">
+    <section id="map">
+      <header class="section-head"><div class="section-no">01 / MODEL MAP</div><div><h2>先把模型拆成五个模块</h2><p class="section-desc">下面是当前整曲生成常见的代表性分层，不是所有模型的固定结构。核心是把“写什么”和“声音怎么实现”分开。</p></div></header>
+      <div class="model-map" aria-label="音乐生成模型通用架构图">
+        <div class="map-flow">
+          <div class="map-node"><b>CONDITION</b><strong>用户条件</strong><small>Query · 歌词 · 曲风 · 参考音频 · BPM / Key</small></div><div class="arrow">→</div>
+          <div class="map-node plan"><b>PLANNER</b><strong>结构 / 旋律规划</strong><small>段落、歌词时序、旋律、和弦；可由 LM 或符号模型生成</small></div><div class="arrow">→</div>
+          <div class="map-node"><b>REPRESENTATION</b><strong>紧凑音乐表示</strong><small>Codec token · semantic token · 连续 latent · MIDI / ABC</small></div><div class="arrow">→</div>
+          <div class="map-node render"><b>GENERATOR</b><strong>声学生成器</strong><small>自回归 Transformer，或 Diffusion / Flow DiT</small></div><div class="arrow">→</div>
+          <div class="map-node out"><b>DECODER</b><strong>音频解码</strong><small>VAE / Codec decoder / Vocoder → WAV</small></div>
+        </div>
+        <div class="map-band"><div class="map-label">训练时</div><div class="map-value"><b>真实音频可见：</b>从音频提取目标 token / latent，计算预测误差，反向传播更新参数。</div></div>
+        <div class="map-band"><div class="map-label">推理时</div><div class="map-value"><b>真实音频不存在：</b>模型根据条件预测计划和音乐表示，再从 token 或噪声生成波形。</div></div>
+      </div>
+      <div class="terms">
+        <div class="term"><b>Tokenizer / Codec</b><span>把高采样率波形压成低帧率表示；token 越少越省上下文，但重建细节可能下降。</span></div>
+        <div class="term"><b>Transformer</b><span>网络结构，不等于训练目标。它既能做“下一个 token”，也能作为 Diffusion Transformer。</span></div>
+        <div class="term"><b>Diffusion / Flow</b><span>从噪声逐步走向连续音频 latent；训练预测噪声、v 或速度场，推理依赖采样步数与求解器。</span></div>
+        <div class="term"><b>Conditioning</b><span>条件可通过拼接、Cross-Attention、ControlNet 或参考 token 注入；关键是时间对齐和训练覆盖。</span></div>
+      </div>
+    </section>
+
+    <section id="paradigms">
+      <header class="section-head"><div class="section-no">02 / PARADIGMS</div><div><h2>同是 Transformer，预测对象可能完全不同</h2><p class="section-desc">先看“输入条件、模型预测什么、用什么 loss”，再判断它属于哪条路线。</p></div></header>
+      <div class="compare-wrap"><table class="compare">
+        <thead><tr><th>路线</th><th>模型预测</th><th>典型训练目标</th><th>推理方式</th><th>主要取舍</th></tr></thead>
+        <tbody>
+          <tr><td>自回归（AR）<br><span class="tag">DISCRETE</span></td><td>下一个 codec / semantic token</td><td><code>L = −Σ log p(zₜ | z&lt;ₜ, c)</code></td><td>逐步采样，常用 temperature、top-k / top-p、KV Cache</td><td>结构规划直接；长序列慢，早期错误会继续传递</td></tr>
+          <tr><td>扩散（Diffusion）<br><span class="tag">CONTINUOUS</span></td><td>噪声、v，或干净 latent</td><td>随机时间步加噪后的回归损失</td><td>从噪声多步去噪，可加 CFG</td><td>每一步可并行处理整段 latent；步数决定速度与质量</td></tr>
+          <tr><td>流匹配（Flow Matching）<br><span class="tag">CONTINUOUS</span></td><td>噪声到数据之间的速度场</td><td><code>L = E ||vθ(xₜ,t,c)−uₜ||²</code></td><td>数值求解 ODE；可蒸馏到少步</td><td>路径更直接、少步潜力高；仍依赖 VAE 与条件质量</td></tr>
+          <tr><td>混合级联（Hybrid）<br><span class="tag">AR + FLOW</span></td><td>先预测语义 / 旋律计划，再渲染声学 latent</td><td>Token CE + Flow / Diffusion loss 分阶段训练</td><td>规划 → 渲染 → 解码</td><td>长程结构与音质解耦；模块接口误差成为新瓶颈</td></tr>
+        </tbody>
+      </table></div>
+      <div class="classic-grid">
+        <article class="classic"><div class="classic-head"><h3>MusicGen</h3><span>JD 经典路线</span></div><div class="path mono">WAV → EnCodec 4 码本 / 50 Hz → AR Transformer → WAV</div><p>32 kHz 音频经 RVQ 变成并行码本序列，使用交错 pattern 预测。论文的 30 秒音频对应 1,500 个自回归时间步。</p></article>
+        <article class="classic"><div class="classic-head"><h3>Riffusion 原始版</h3><span>JD 经典路线</span></div><div class="path mono">WAV → 频谱图 → 文本条件图像扩散 → 反变换</div><p>把时频图当图像生成，直观复用 Stable Diffusion；限制主要落在相位重建、长时连续性与音频专用表示。</p></article>
+        <article class="classic"><div class="classic-head"><h3>Jukebox</h3><span>JD 经典路线</span></div><div class="path mono">WAV → 多层 VQ-VAE → 分层 AR prior → 逐级上采样</div><p>顶层先建长程音乐信息，底层逐级补声学细节；能生成带人声音乐，但层级多、采样计算量大。</p></article>
+      </div>
+    </section>
+
+    <section id="train">
+      <header class="section-head"><div class="section-no">03 / TRAIN</div><div><h2>具体案例：一首 120 秒中文流行歌怎样进入训练</h2><p class="section-desc">以下用“25 Hz 语义 token + Flow 渲染器”的现代混合架构演示。数值用于解释计算，模型层数、latent 维度和损失权重由具体实现决定。</p></div></header>
+      <div class="case-head">
+        <article class="case-card"><h3>训练条件 <span>CONDITION</span></h3><p><strong>Query：</strong>女声中文流行，92 BPM，A minor；主歌克制，副歌加入鼓与电吉他。</p><p><strong>歌词 / 结构：</strong><code>[intro] [verse] [chorus] [verse] [chorus] [outro]</code>，保留完整歌词及段落时间边界。</p></article>
+        <article class="case-card"><h3>监督目标 <span>TARGET</span></h3><p><strong>Full mix：</strong>120 s · 48 kHz · Stereo。音质、歌词版本、结构、语种与 Meta 已通过门禁。</p><div class="numbers"><div class="number"><b>11.52M</b><small>120×48,000×2 个标量采样值</small></div><div class="number"><b>3,000</b><small>若语义流为 25 Hz：120×25</small></div><div class="number"><b>1 条</b><small>条件、计划、token、latent 与音频同源对齐</small></div></div></article>
+      </div>
+      <div class="pipeline" aria-label="完整歌曲训练流程">
+        <div class="pipe"><b>样本读取</b><span>音频 + Query + 完整歌词 + 结构 + Meta；按 Audio ID 取同一版本。</span></div>
+        <div class="pipe"><b>表示提取</b><span>Tokenizer 得到 3,000 个语义 token；VAE 编码真实声学 latent。</span></div>
+        <div class="pipe"><b>LM 前向</b><span>给定条件和前文 token，预测下一个语义 token 的概率分布。</span></div>
+        <div class="pipe"><b>Renderer 前向</b><span>真实 latent 加噪；DiT 根据语义 token、歌词和时间步预测速度场。</span></div>
+        <div class="pipe"><b>更新与回归</b><span>总 loss 反传；优化器更新参数；固定测试集检查音质、歌词与结构。</span></div>
+      </div>
+      <div class="loss-grid">
+        <article class="loss ar"><h3>计算 01 · 自回归 token loss</h3><div class="equation">真实下一个 token：842<br>模型给 token 842 的概率：p = 0.08<br>L_AR = −ln(0.08) = 2.526</div><p>反向传播会提高正确 token 在相同上下文下的概率。真实训练对 batch 内所有有效时间步求平均，padding 不计入。</p></article>
+        <article class="loss flow"><h3>计算 02 · Flow Matching loss</h3><div class="equation">噪声 x₀ = −0.4，真实 latent x₁ = 0.6，t = 0.25<br>xₜ = (1−t)x₀ + tx₁ = −0.15<br>目标速度 uₜ = x₁−x₀ = 1.0<br>模型预测 0.7 → L_FM = (0.7−1.0)² = 0.09</div><p>这里只把一个 latent 维度缩成标量。真实损失会覆盖时间轴、通道、latent 维度和 batch。</p></article>
+      </div>
+      <div class="guardrail"><strong>训练时容易混淆的点：</strong>目标音频不会被梯度“修改”；变化的是 Tokenizer、LM 或 Renderer 的参数。分阶段系统通常先单独训练并冻结部分模块，再训练下游，最后做 SFT / 偏好对齐或联合微调。</div>
+    </section>
+
+    <section id="infer">
+      <header class="section-head"><div class="section-no">04 / INFERENCE</div><div><h2>同一个 case：没有目标音频时怎样生成整曲</h2><p class="section-desc">推理只有用户条件和随机种子。完整歌曲的关键不是把 30 秒重复四次，而是先确定段落、歌词覆盖和能量变化，再渲染声音。</p></div></header>
+      <div class="infer-layout">
+        <article class="prompt"><h3>一次推理请求</h3><dl>
+          <div><dt>STYLE</dt><dd>Chinese pop · female vocal · 92 BPM · A minor</dd></div>
+          <div><dt>FORM</dt><dd>克制主歌 → 高能副歌 → 收束结尾</dd></div>
+          <div><dt>LYRICS</dt><dd>完整歌词，按 verse / chorus 标记</dd></div>
+          <div><dt>LENGTH</dt><dd>120 s</dd></div>
+          <div><dt>SEED</dt><dd>42；用于复现同一采样配置</dd></div>
+        </dl></article>
+        <div>
+          <h3>计划出的时间轴</h3>
+          <div class="timeline" aria-label="120 秒歌曲结构"><span>0–8<br>Intro</span><span>8–38<br>Verse 1</span><span>38–62<br>Chorus</span><span>62–92<br>Verse 2</span><span>92–114<br>Final Chorus</span><span>114–120<br>Outro</span></div>
+          <p class="note">段落长度是该示例的计划，不是固定模板。歌词行需要被分配到可唱时间窗，否则会出现前 30 秒唱完、尾部漏唱或段落错位。</p>
+        </div>
+      </div>
+      <div class="infer-flow" aria-label="完整歌曲推理流程">
+        <div class="infer-step"><b>01 / NORMALIZE</b><strong>条件标准化</strong><small>统一语言、歌词标签、时长、BPM / Key 与参考音频。</small></div>
+        <div class="infer-step"><b>02 / PLAN</b><strong>结构与旋律计划</strong><small>LM 输出段落、歌词时序；部分模型显式生成和弦 / ABC。</small></div>
+        <div class="infer-step"><b>03 / SEMANTIC</b><strong>生成 3,000 个语义 token</strong><small>25 Hz × 120 s；逐步预测旋律、唱法和结构信息。</small></div>
+        <div class="infer-step"><b>04 / RENDER</b><strong>噪声 → 声学 latent</strong><small>Flow / Diffusion 多步更新；同时读取 token、歌词与风格条件。</small></div>
+        <div class="infer-step"><b>05 / DECODE</b><strong>48 kHz Stereo</strong><small>VAE / Codec 解码，再做响度、削波、歌词覆盖与结构质检。</small></div>
+      </div>
+      <div class="knobs">
+        <div class="knob"><b>Temperature / top-p</b><span>控制 AR token 多样性；过低趋同，过高可能结构漂移。</span></div>
+        <div class="knob"><b>CFG / guidance</b><span>增强文字条件；过高可能牺牲自然度或产生伪影。</span></div>
+        <div class="knob"><b>Steps / solver</b><span>决定 Flow / Diffusion 成本；少步需要蒸馏或专门训练。</span></div>
+        <div class="knob"><b>Best-of-N</b><span>多候选重排能抬高最终样本质量，但计算成本按 N 增长。</span></div>
+      </div>
+    </section>
+
+    <section id="jd">
+      <header class="section-head"><div class="section-no">05 / JD COVERAGE</div><div><h2>JD 中“懂模型”具体要能回答什么</h2><p class="section-desc">不是背模型名，而是能从任务定义一路讲到表示、loss、采样、评测和部署瓶颈。</p></div></header>
+      <div class="jd-grid">
+        <article class="jd"><div class="jd-head"><b>01</b><h3>架构与表示</h3></div><p>为什么不用原始 48 kHz 波形直接给 Transformer？Codec token、语义 token、连续 latent、MIDI 各保留什么、损失什么？</p></article>
+        <article class="jd"><div class="jd-head"><b>02</b><h3>训练与调优</h3></div><p>能写出 <code>condition → target → prediction → loss</code>；说明预训练、SFT、LoRA、DPO / RL 和质量课程分别解决什么问题。</p></article>
+        <article class="jd"><div class="jd-head"><b>03</b><h3>可控生成</h3></div><p>歌词、旋律、和弦、结构、音色、参考音频如何进入模型；静态全局标签与随时间变化的控制如何区分。</p></article>
+        <article class="jd"><div class="jd-head"><b>04</b><h3>音频 / 音乐理解</h3></div><p>BPM、Key、Chord、Beat、Structure、Lyrics alignment、Source separation 既能生产训练条件，也能定位生成 Bad Case。</p></article>
+        <article class="jd"><div class="jd-head"><b>05</b><h3>多模态与编辑</h3></div><p>文本成歌、清唱配伴奏、Cover、Repaint、续写、分轨的输入输出不同；图像条件也可能先转成音乐描述，而非直接进音频模型。</p></article>
+        <article class="jd"><div class="jd-head"><b>06</b><h3>压缩、加速与部署</h3></div><p>区分 AR 的 token 数 / KV Cache 与 DiT 的采样步数；记录硬件、精度、batch、显存、冷 / 热启动和质量回归。</p></article>
+      </div>
+      <div class="deploy">
+        <div><b>实时系数 RTF</b><span>生成耗时 ÷ 音频时长。30 秒音频耗时 6 秒，RTF = 0.20；越小越快。</span></div>
+        <div><b>AR 优化</b><span>降低 token rate、码本交错、KV Cache、量化、并行解码；检查结构与音质损失。</span></div>
+        <div><b>DiT 优化</b><span>减少采样步数、蒸馏、改求解器、混合精度、编译 / TensorRT；必须复测伪影。</span></div>
+        <div><b>长音频优化</b><span>全曲上下文、分段窗口与 overlap 各有取舍；跨段落连续性不能只靠 crossfade。</span></div>
+      </div>
+    </section>
+
+    <section id="frontier">
+      <header class="section-head"><div class="section-no">06 / FRONTIER</div><div><h2>截至 2026-09-15 的公开前沿</h2><p class="section-desc">只列论文、官方仓库或官方技术说明可核验的代表性工作。各方自报指标的评测集与采样预算不同，不能直接横向排名。</p></div></header>
+      <div class="frontier-wrap"><div class="frontier" role="table" aria-label="2026 年音乐生成前沿模型对比">
+        <div class="th" role="columnheader">时间</div><div class="th" role="columnheader">模型</div><div class="th" role="columnheader">核心架构</div><div class="th" role="columnheader">主要特点</div><div class="th limit" role="columnheader">阅读边界</div>
+
+        <div class="date">2026-01-31</div><div class="model"><a href="https://arxiv.org/html/2602.00744v3">ACE-Step 1.5</a><small>Open weights</small></div><div>LM 生成结构化蓝图与 5 Hz FSQ 计划；2B / 4B DiT + 1D VAE 渲染；蒸馏至 4–8 步。</div><div class="feature">10 秒–10 分钟、消费级显卡、Cover / Repaint / Vocal2BGM / LoRA。</div><div class="limit">速度、质量与显存为作者配置下结果；部署时需按具体模型与 offload 复测。</div>
+
+        <div class="date">2026-05-31</div><div class="model"><a href="https://arxiv.org/html/2606.02638v1">SegTune</a><small>Research</small></div><div>DiT 同时接收全局描述与按时间对齐的 segment prompt；推理时由 duration predictor 估计歌词 / 段落时间。</div><div class="feature">把“副歌加入弦乐、第二段降低能量”变成局部可控条件。</div><div class="limit">重点是细粒度结构控制；不能由其论文结果推断所有曲风的产品表现。</div>
+
+        <div class="date">2026-07-13</div><div class="model"><a href="https://arxiv.org/html/2607.11699v2">Qwen-Music</a><small>Technical report</small></div><div>25 Hz 单码本语义 token → AR LLM；Melody-CoT 先规划旋律；DiT + Spec-VAE / Refiner 渲染。</div><div class="feature">文本成歌与 Cover；质量分级预训练、离线 DPO、在线 GSPO 对齐。</div><div class="limit">25 Hz 表示用于 LLM 语义建模，不等于最终音频只保留 25 次采样 / 秒。</div>
+
+        <div class="date">2026-08-09</div><div class="model"><a href="https://arxiv.org/html/2608.08787v2">FullDiT</a><small>Renderer research</small></div><div>全曲非因果 DiT 渲染器；8 路 RVQ 条件 + 歌词 / caption；用 EMDC 模拟上游 token 错误。</div><div class="feature">专门解决“训练吃真实 token，推理吃 LM 错 token”的级联分布偏移。</div><div class="limit">这是渲染器与接口鲁棒性研究，不是完整终端产品。</div>
+
+        <div class="date">2026-08-13</div><div class="model"><a href="https://www.minimax.io/blog/minimax-music-3-0-next-generation-open-weights-production-ready-versatile-music-model">MiniMax Music 3.0</a><small>Official release</small></div><div>8 层 RVQ；8B Global LM + 0.6B Local LM；隐藏状态融合 → 2.4B Flow → 123M Flow-VAE。</div><div class="feature">全局结构与帧内声学细节分工；结构化 caption 描述段落内情绪、配器和唱法变化。</div><div class="limit">架构信息来自官方技术说明；权重使用范围以发布许可证为准。</div>
+
+        <div class="date latest">2026-09</div><div class="model latest"><a href="https://github.com/multimodal-art-projection/YuE">YuE2</a><small>Official repo · report pending</small></div><div class="latest">AR–NAR Mixture-of-Transformers：先写可编辑 ABC 旋律 / 和弦，再生成语义 token，Flow 生成声学 latent，VAE 解码。</div><div class="feature latest">白盒符号规划、Zero-shot Cover、基于乐谱的 agentic editing；保留计划和中间产物。</div><div class="limit latest">截至本页日期技术报告尚待发布；以官方仓库接口和发布说明为准。</div>
+      </div></div>
+      <div class="trend">
+        <div><b>趋势 01 · 规划与渲染解耦</b><span>LM 管结构、歌词和语义，DiT / Flow 管音色与混音；两侧可分别扩展。</span></div>
+        <div><b>趋势 02 · 计划可见、可编辑</b><span>旋律、和弦、段落从隐变量变成 ABC / token 等中间接口，方便重用与修改。</span></div>
+        <div><b>趋势 03 · 少步与本地化</b><span>Flow、轨迹蒸馏、量化和 offload 把整曲生成推进消费级硬件。</span></div>
+        <div><b>趋势 04 · 训练覆盖真实接口误差</b><span>下游 Renderer 不能只见完美真值条件，要学习处理上游 LM 的错误与不确定性。</span></div>
+      </div>
+      <p class="sources">基础与来源： <a href="https://arxiv.org/html/2306.05284v3">MusicGen</a><a href="https://github.com/riffusion/riffusion">Riffusion</a><a href="https://arxiv.org/abs/2005.00341">Jukebox</a><a href="https://arxiv.org/html/2503.08638v1">YuE 1</a><a href="https://arxiv.org/html/2407.14358v2">Stable Audio Open</a><a href="https://arxiv.org/abs/2210.02747">Flow Matching</a></p>
+    </section>
+
+    <section id="check">
+      <header class="section-head"><div class="section-no">07 / CHECK</div><div><h2>看一个新模型，只问五件事</h2></div></header>
+      <div class="checklist">
+        <div class="check"><b>01 / TASK</b><span>输入条件和最终输出是什么？是整曲、伴奏、Cover 还是编辑？</span></div>
+        <div class="check"><b>02 / REPRESENTATION</b><span>音频被压成什么？帧率、码本数、上下文长度是多少？</span></div>
+        <div class="check"><b>03 / OBJECTIVE</b><span>模型预测 token、噪声、v 还是 flow velocity？loss 怎样算？</span></div>
+        <div class="check"><b>04 / INFERENCE</b><span>逐 token 还是多步去噪？时长、步数、显存和 RTF 怎样记录？</span></div>
+        <div class="check"><b>05 / EVIDENCE</b><span>比较是否使用同一 Prompt、候选数、时长、评测集和人工协议？</span></div>
+      </div>
+    </section>
+  </main>
+  <footer><div class="wrap">音乐生成模型原理与前沿 · 技术学习简报 · 更新于 2026-09-15</div></footer>
+</body>
+</html>
