@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="AI 音乐生成项目中的训练数据构建、样本加工与评测闭环。">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <link rel="icon" href="data:,">
+  <title>AI 音乐生成 · 训练数据构建与评测</title>
+  <style>
+    :root{
+      --ink:#17212b;--sub:#596672;--muted:#77838d;--paper:#f5f7f9;--card:#fff;
+      --line:#dce2e7;--line-strong:#c8d1d9;--blue:#245f88;--blue-soft:#eef5f9;
+      --green:#31705a;--green-soft:#edf7f2;--amber:#916924;--amber-soft:#fbf5e7;--red:#8a4d4d;--red-soft:#faf0f0;
+      --radius:10px;--shadow:0 12px 34px rgba(27,43,56,.06)
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth;scroll-padding-top:68px}
+    body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.58 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;-webkit-font-smoothing:antialiased}
+    a{color:var(--blue);text-underline-offset:3px}
+    .wrap{width:min(1160px,calc(100% - 40px));margin:0 auto}
+    .hero{padding:19px 0 18px;background:#fff;border-bottom:1px solid var(--line)}
+    h1{margin:0;font-size:clamp(23px,2.8vw,29px);line-height:1.25;letter-spacing:-.022em;font-weight:690}
+    .nav{position:sticky;top:0;z-index:10;background:rgba(255,255,255,.96);border-bottom:1px solid var(--line);backdrop-filter:blur(12px);overflow-x:auto}
+    .nav .wrap{display:flex;gap:26px;white-space:nowrap}
+    .nav a{padding:10px 0;color:#4d5b66;text-decoration:none;font-size:13px;font-weight:650}
+    main{padding:6px 0 48px}
+    section{padding:30px 0;border-bottom:1px solid var(--line)}
+    #tasks{padding-top:24px;padding-bottom:24px}
+    section:last-child{border-bottom:0}
+    .section-head{display:grid;grid-template-columns:76px minmax(0,1fr);gap:12px;margin-bottom:15px}
+    .section-no{padding-top:4px;color:var(--blue);font-size:11px;font-weight:750;letter-spacing:.07em}
+    h2{margin:0;font-size:24px;line-height:1.3;letter-spacing:-.018em;font-weight:690}
+    .section-desc{max-width:900px;margin:3px 0 0;color:var(--sub);font-size:14px}
+    h3{margin:0;font-size:16px;line-height:1.4}
+    p{margin:9px 0 0}
+    code{font:12px/1.4 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+
+    .task-table{border:1px solid var(--line);border-radius:var(--radius);background:#fff;overflow:hidden}
+    .task-row{display:grid;grid-template-columns:195px minmax(300px,.85fr) minmax(340px,1.15fr);align-items:center;gap:14px;padding:11px 15px;border-bottom:1px solid var(--line)}
+    .task-name{white-space:nowrap}.task-name span{display:inline-block;margin-right:7px;color:var(--blue);font-size:10px;font-weight:800;letter-spacing:.06em}.task-name strong{display:inline;font-size:15px}.task-name small{margin-left:6px;color:var(--muted);font-size:10px}
+    .task-io{display:flex;align-items:center;gap:8px;color:#34434e;font-size:13px}.task-io b,.task-data b,.meta-row b{color:var(--muted);font-size:10px;letter-spacing:.04em;text-transform:uppercase}.task-io i{color:var(--blue);font-style:normal}
+    .task-data{color:#43515d;font-size:13px;line-height:1.55}.task-data code{color:#294b61}
+    .meta-row{display:grid;grid-template-columns:130px 1fr;gap:14px;padding:9px 15px;background:#f8fafb;color:#54616c;font-size:12px;line-height:1.5}
+
+    .system{border:1px solid var(--line-strong);border-radius:14px;background:var(--card);box-shadow:var(--shadow);overflow:hidden}
+    .system-band{display:grid;grid-template-columns:88px 1fr;border-bottom:1px solid var(--line)}
+    .system-band:last-child{border-bottom:0}
+    .band-label{display:flex;align-items:center;padding:14px 12px;background:#f8fafb;border-right:1px solid var(--line);color:var(--muted);font-size:11px;font-weight:750;letter-spacing:.05em}
+    .source-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:7px;padding:11px}
+    .source{min-height:0;padding:9px 10px;border:1px solid var(--line);border-radius:6px;color:#44525d;background:#fff}
+    .source strong{display:block;color:var(--ink);font-size:13px}.source b{display:block;margin-top:3px;color:var(--blue);font-size:15px}.source small{display:block;margin-top:2px;color:var(--muted);font-size:10px;line-height:1.4}
+    .source-key{position:relative;border-width:1.5px}.source-key.tidal{border-color:#83b4d2;background:#f2f8fc}.source-key.suno{border-color:#86bea7;background:#f0f8f4}.source-key.suno b{color:var(--green)}
+    .source-impact{float:right;margin:0 0 2px 4px;padding:2px 5px;border-radius:4px;background:#dcecf6;color:var(--blue);font-size:9px;font-weight:800;letter-spacing:.03em}.suno .source-impact{background:#dcefe6;color:var(--green)}
+    .stage-wrap{padding:14px 11px 12px;overflow-x:auto}
+    .stage-grid{display:grid;grid-template-columns:repeat(7,minmax(112px,1fr));gap:20px;min-width:920px}
+    .stage{position:relative;min-height:88px;padding:10px;border:1px solid var(--line);border-radius:7px;background:#fff}
+    .stage:not(:last-child)::after{content:"→";position:absolute;right:-17px;top:31px;color:#91a0ab;font-weight:700}
+    .stage-no{display:block;margin-bottom:5px;color:var(--blue);font-size:10px;font-weight:800;letter-spacing:.06em}
+    .stage h3{font-size:13px}.stage p{margin-top:4px;color:var(--muted);font-size:11px;line-height:1.42}
+    .contract{display:flex;flex-wrap:wrap;align-items:center;gap:5px;padding:10px 11px}
+    .contract code{padding:4px 7px;border:1px solid var(--line);border-radius:5px;background:#f8fafb;color:#344956}
+    .contract i{color:#9aa5ad;font-style:normal}
+    .output-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:10px 11px}
+    .output{padding:9px 11px;border:1px solid #cbdbe4;border-radius:6px;background:var(--blue-soft)}
+    .output small{display:inline;margin-right:8px;color:var(--blue);font-size:10px;font-weight:750;letter-spacing:.05em}
+    .output strong{display:inline;font-size:13px}
+
+    .change-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;counter-reset:change}
+    .change-card{counter-increment:change;position:relative;padding:17px 18px;border:1px solid var(--line);border-radius:8px;background:var(--card)}
+    .change-title{display:grid;grid-template-columns:28px 1fr;gap:9px;align-items:center;margin-bottom:12px}
+    .change-title::before{content:counter(change,decimal-leading-zero);display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--ink);color:#fff;font-size:10px;font-weight:750}
+    .change-title p{margin:3px 0 0;color:var(--muted);font-size:12px}
+    .change-title .swap{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin-top:6px}.swap span{padding:3px 7px;border-radius:4px;font-size:11px;font-weight:750}.swap i{color:#95a0a8;font-style:normal}.swap .old{background:var(--red-soft);color:var(--red)}.swap .mid{background:var(--amber-soft);color:var(--amber)}.swap .new{background:var(--green-soft);color:var(--green)}
+    .bac{display:grid;grid-template-columns:1fr;gap:0;border-top:1px solid var(--line)}
+    .bac-row{display:grid;grid-template-columns:65px 1fr;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+    .bac-row:last-child{border-bottom:0;padding-bottom:0}
+    .bac-row dt{margin:0;font-size:11px;font-weight:800;letter-spacing:.08em}
+    .bac-row dd{margin:0;color:#40505c;font-size:14px}.bac-row.before dt{color:var(--red)}.bac-row.change dt{color:var(--blue)}.bac-row.after dt{color:var(--green)}
+    .impact{display:inline-block;margin-top:9px;padding:4px 7px;border-radius:4px;background:var(--green-soft);color:var(--green);font-size:10px;font-weight:750}
+
+    .evolution{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;border:1px solid var(--line);border-radius:var(--radius);background:var(--card);overflow:hidden}
+    .batch{position:relative;padding:16px 15px;border-right:1px solid var(--line)}.batch:last-child{border-right:0}
+    .batch:not(:last-child)::after{content:"→";position:absolute;right:-9px;top:33px;z-index:2;width:18px;height:18px;background:#fff;color:#91a0ab;text-align:center;line-height:18px}
+    .batch-no{color:var(--blue);font-size:10px;font-weight:800;letter-spacing:.06em}.batch h3{margin-top:6px;font-size:15px}.batch p{margin-top:6px;color:var(--sub);font-size:12px}
+    .batch .result{margin-top:10px;padding-top:9px;border-top:1px solid var(--line);color:var(--ink);font-size:12px;font-weight:650}
+    .batch.gain-tidal{background:#f2f8fc;box-shadow:inset 0 3px 0 #5a9bc2}.batch.gain-suno{background:#f0f8f4;box-shadow:inset 0 3px 0 #5b9b7f}.gain-tidal .result{color:var(--blue)}.gain-suno .result{color:var(--green)}
+    .scale-note{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:9px}
+    .scale-note div{padding:9px 11px;border:1px solid var(--line);border-radius:6px;background:#fff}.scale-note small{display:inline;margin-right:7px;color:var(--muted);font-size:10px;font-weight:700;letter-spacing:.05em}.scale-note strong{display:inline;font-size:13px}
+
+    .stem-layout{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}
+    .stem-panel,.target-panel{padding:17px 18px;border:1px solid var(--line);border-radius:8px;background:var(--card)}
+    .stem-flow{display:grid;grid-template-columns:120px 30px 1fr;align-items:center;margin-top:12px}.mix{padding:12px 10px;border:1px solid var(--line-strong);border-radius:6px;text-align:center;font-size:12px;font-weight:650;background:#f8fafb}.stem-arrow{text-align:center;color:var(--blue);font-weight:750}
+    .stems{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.stem{padding:9px 10px;border:1px solid var(--line);border-radius:6px;color:#46555f;font-size:12px;background:#fff}.stem.vocal{border-color:#decaca;background:var(--red-soft);color:var(--red)}
+    .merge{display:grid;grid-template-columns:auto 24px 1fr;align-items:center;gap:6px;margin-top:12px;padding:10px;border:1px solid #ccddd5;border-radius:6px;background:var(--green-soft);font-size:12px}.drop{color:var(--red);font-weight:750}
+    .target-panel ul{margin:10px 0 0;padding:0;list-style:none}.target-panel li{display:grid;grid-template-columns:18px 1fr;gap:7px;padding:7px 0;border-bottom:1px solid var(--line);color:#40505c;font-size:13px}.target-panel li:last-child{border-bottom:0}.target-panel li::before{content:"✓";color:var(--green);font-weight:800}
+
+    .eval-layout{display:grid;grid-template-columns:1fr 1fr;gap:11px}.eval-card{padding:16px 17px;border:1px solid var(--line);border-radius:8px;background:var(--card)}
+    .metric-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:10px}.metric{padding:8px 9px;border:1px solid var(--line);border-radius:5px;background:#fafbfc}.metric strong{display:block;font-size:12px}.metric span{display:block;margin-top:1px;color:var(--muted);font-size:10px}
+    .loop{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;margin-top:10px;padding:13px 15px;border:1px solid var(--line);border-radius:8px;background:#fff}.loop-step{position:relative;text-align:center}.loop-step:not(:last-child)::after{content:"→";position:absolute;right:-11px;top:9px;color:#91a0ab;font-weight:750}.loop-step b{display:inline;margin-right:5px;color:var(--blue);font-size:10px}.loop-step span{display:inline;color:#46545f;font-size:12px}
+    .closing{margin-top:10px;padding:10px 13px;border-left:3px solid var(--blue);background:var(--blue-soft);color:#385468;font-size:13px}
+    .references{padding-top:18px;color:var(--muted);font-size:11px}.references a{margin-right:12px;color:#536f82}
+    footer{padding:17px 0 26px;border-top:1px solid var(--line);color:var(--muted);font-size:11px;background:#fff}
+
+    @media(max-width:1100px){.source-grid{grid-template-columns:repeat(4,1fr)}}
+    @media(max-width:900px){
+      .evolution{grid-template-columns:repeat(2,1fr)}
+      .batch:nth-child(2){border-right:0}.batch:nth-child(-n+2){border-bottom:1px solid var(--line)}.batch:nth-child(2)::after{display:none}
+      .change-grid,.stem-layout,.eval-layout{grid-template-columns:1fr}.source-grid{grid-template-columns:repeat(3,1fr)}.task-row{grid-template-columns:130px 1fr}.task-data{grid-column:2}.meta-row{grid-template-columns:130px 1fr}
+    }
+    @media(max-width:640px){
+      .wrap{width:min(100% - 24px,1160px)}.hero{padding:20px 0}.nav .wrap{gap:20px}
+      section{padding:36px 0}.section-head{grid-template-columns:1fr;gap:4px}.section-no{padding:0}h2{font-size:24px}
+      .evolution,.scale-note{grid-template-columns:1fr}.task-row,.meta-row{grid-template-columns:1fr;gap:7px}.task-data{grid-column:auto}.task-io{align-items:flex-start;flex-wrap:wrap}
+      .system-band{grid-template-columns:1fr}.band-label{padding:11px 15px;border-right:0;border-bottom:1px solid var(--line)}.source-grid{grid-template-columns:repeat(2,1fr);padding:13px}.source{min-height:48px}
+      .stage-wrap{padding:16px 13px}.stage-grid{grid-template-columns:1fr;gap:18px;min-width:0}.stage{min-height:0}.stage:not(:last-child)::after{content:"↓";right:auto;left:50%;top:auto;bottom:-18px;transform:translateX(-50%)}
+      .output-grid{grid-template-columns:1fr;padding:13px}.contract{padding:13px}.batch{border-right:0;border-bottom:1px solid var(--line)}.batch:last-child{border-bottom:0}.batch::after{display:none!important}
+      .stem-flow{grid-template-columns:1fr}.stem-arrow{padding:9px;transform:rotate(90deg)}.metric-list{grid-template-columns:1fr}
+      .loop{grid-template-columns:1fr;text-align:left}.loop-step{text-align:left;padding:0 0 12px;border-bottom:1px solid var(--line)}.loop-step:last-child{padding-bottom:0;border-bottom:0}.loop-step::after{display:none}
+    }
+    @media print{body{background:#fff}.nav{display:none}.hero{padding:24px 0}.system,.change-card{box-shadow:none}section{break-inside:avoid}.change-card{break-inside:avoid}}
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="wrap">
+      <h1>AI 音乐生成：训练数据构建与评测</h1>
+    </div>
+  </header>
+
+  <nav class="nav" aria-label="页内导航"><div class="wrap">
+    <a href="#tasks">训练任务</a><a href="#pipeline">数据流</a><a href="#changes">关键改动</a><a href="#scale">数据演进</a><a href="#accompaniment">伴奏样本</a><a href="#evaluation">评测闭环</a>
+  </div></nav>
+
+  <main class="wrap">
+    <section id="tasks">
+      <header class="section-head"><div class="section-no">01 / TASKS</div><div><h2>模型任务与数据交付</h2><p class="section-desc">底层音频与 Meta 共用；训练样本根据音乐生成和伴奏生成分别组织。</p></div></header>
+      <div class="task-table">
+        <article class="task-row">
+          <div class="task-name"><span>MODEL 01</span><strong>音乐生成</strong><small>90–180s</small></div>
+          <div class="task-io"><span><b>Input</b> Query + 完整歌词 + 曲风</span><i>→</i><span><b>Output</b> 完整歌曲</span></div>
+          <div class="task-data"><b>训练数据</b> <code>{query, lyrics_full, caption, genre, structure_segments, muq_mulan_audio/text} → full_mix</code></div>
+        </article>
+        <article class="task-row">
+          <div class="task-name"><span>MODEL 02</span><strong>伴奏生成</strong></div>
+          <div class="task-io"><span><b>Input</b> 人声音频 + 曲风 / 音频 Prompt</span><i>→</i><span><b>Output</b> 对齐伴奏</span></div>
+          <div class="task-data"><b>训练数据</b> <code>{vocal_uri, style/audio_prompt, bpm, key, stem_refs} → accompaniment_uri</code></div>
+        </article>
+        <div class="meta-row"><b>Common Meta</b><span>audio_id · source / batch · license · title / main_artist · language · duration · codec / channels · SR / BR / bit depth / file size · URI / checksum · pipeline version</span></div>
+      </div>
+    </section>
+
+    <section id="pipeline">
+      <header class="section-head"><div class="section-no">02 / PIPELINE</div><div><h2>从候选音源到训练样本</h2><p class="section-desc">Audio ID 贯穿原始文件、歌词、caption、结构、特征、分轨结果和训练清单；每个中间产物保留来源批次与处理版本。</p></div></header>
+      <div class="system" aria-label="训练数据处理流程图">
+        <div class="system-band"><div class="band-label">SOURCE</div><div class="source-grid">
+          <div class="source"><strong>供应商采购</strong><b>约 400 万</b><small>首批约 50 万，分批接入</small></div>
+          <div class="source"><strong>Qobuz</strong><b>约 3,000 万</b><small>按语种筛选约 800 万；中文不足 3 万</small></div>
+          <div class="source source-key tidal"><span class="source-impact">增益 01</span><strong>Tidal</strong><b>约 2,000 万</b><small>约 200 万带歌词；筛选约 115 万</small></div>
+          <div class="source"><strong>全民 K 歌</strong><b>约 75 万</b><small>K-sing 场景数据</small></div>
+          <div class="source"><strong>Hi-Res 音源</strong><b>约 5 万</b><small>金曲光碟与高解析度音源</small></div>
+          <div class="source source-key suno"><span class="source-impact">增益 02</span><strong>Suno 生成歌曲</strong><b>约 115 万</b><small>生成后筛选、标注进入候选集</small></div>
+          <div class="source"><strong>人工实录</strong><b>约 2,000</b><small>干净条件与专项验证</small></div>
+        </div></div>
+        <div class="system-band">
+          <div class="band-label">PROCESS</div>
+          <div class="stage-wrap">
+            <div class="stage-grid">
+              <div class="stage"><span class="stage-no">01</span><h3>接入与登记</h3><p>来源、授权、Audio ID、批次版本</p></div>
+              <div class="stage"><span class="stage-no">02</span><h3>Meta 规范化</h3><p>标题 / 主歌手归一，来源内去重</p></div>
+              <div class="stage"><span class="stage-no">03</span><h3>音质筛查</h3><p>SR、BR、位深、cutoff、flatness</p></div>
+              <div class="stage"><span class="stage-no">04</span><h3>歌词与人声</h3><p>VAD、ASR、语种、歌词覆盖</p></div>
+              <div class="stage"><span class="stage-no">05</span><h3>结构解析</h3><p>段落边界、标签与歌词对齐</p></div>
+              <div class="stage"><span class="stage-no">06</span><h3>语义表征</h3><p>Caption、音频 / 文本 embedding</p></div>
+              <div class="stage"><span class="stage-no">07</span><h3>分轨与质检</h3><p>Multi-stem、漏声、伪影、对齐</p></div>
+            </div>
+          </div>
+        </div>
+        <div class="system-band"><div class="band-label">CONTRACT</div><div class="contract" aria-label="样本数据契约"><code>audio_id</code><i>→</i><code>audio / meta</code><i>→</i><code>lyrics / caption</code><i>→</i><code>quality_vector</code><i>→</i><code>structure</code><i>→</i><code>embeddings</code><i>→</i><code>stems</code><i>→</i><code>manifest</code></div></div>
+        <div class="system-band"><div class="band-label">OUTPUT</div><div class="output-grid"><div class="output"><small>DATASET A</small><strong>完整歌曲训练集：Query / 歌词 / 结构 / 混音</strong></div><div class="output"><small>DATASET B</small><strong>伴奏训练集：人声条件 / 风格条件 / 伴奏目标</strong></div></div></div>
+      </div>
+    </section>
+
+    <section id="changes">
+      <header class="section-head"><div class="section-no">03 / CHANGES</div><div><h2>四项关键改动</h2><p class="section-desc">每项改动都从明确的 Bad Case 出发，在固定测试集上回归，并结合人工听审判断是否进入下一版训练数据。</p></div></header>
+      <div class="change-grid">
+        <article class="change-card">
+          <div class="change-title"><div><h3>音乐—文本语义对齐</h3><p class="swap"><span class="old">CLAP3</span><i>→</i><span class="new">MuQ-MuLan</span></p></div></div>
+          <dl class="bac"><div class="bac-row before"><dt>BEFORE</dt><dd>通用音文表征对音乐属性的区分度不足，caption 与音频的匹配筛选不稳定。</dd></div><div class="bac-row change"><dt>CHANGE</dt><dd>用 MuQ-MuLan 分别提取音频特征与 <code>muq_mulan_text</code>，统一 caption、曲风和 Query 的语义检索与过滤。</dd></div><div class="bac-row after"><dt>AFTER</dt><dd>音乐语义筛选更集中，错配样本更容易被识别并回听。</dd></div></dl>
+        </article>
+        <article class="change-card">
+          <div class="change-title"><div><h3>整曲歌词与段落结构</h3><p class="swap"><span class="old">无完整结构</span><i>→</i><span class="mid">All-In-One</span><i>→</i><span class="new">SongFormer</span></p></div></div>
+          <dl class="bac"><div class="bac-row before"><dt>BEFORE</dt><dd>歌词在前 30 秒唱完或到 180 秒仍未唱完；主歌、副歌与音乐段落不一致。</dd></div><div class="bac-row change"><dt>CHANGE</dt><dd>保留整篇歌词和句级时间信息；结构模型由 All-In-One 迁移到 SongFormer，将歌词片段对齐到 verse / chorus / bridge 等段落。</dd></div><div class="bac-row after"><dt>AFTER</dt><dd>歌词覆盖和段落完整性改善，长歌的结构一致性更稳定。</dd></div></dl>
+        </article>
+        <article class="change-card">
+          <div class="change-title"><div><h3>伴奏目标构建</h3><p class="swap"><span class="old">Demucs 2-stem</span><i>→</i><span class="new">BS-RoFormer 5 类中间轨</span></p></div></div>
+          <dl class="bac"><div class="bac-row before"><dt>BEFORE</dt><dd>Demucs 人声 / 伴奏二轨粗分，存在人声残留、伴奏串入人声轨和明显分离伪影。</dd></div><div class="bac-row change"><dt>CHANGE</dt><dd>参考 Suno 公开的 12-stem 分类方案，结合项目 checkpoint 和吞吐要求，落成五类中间轨；分离模型切换为 BS-RoFormer。</dd></div><div class="bac-row after"><dt>AFTER</dt><dd>可按轨定位污染并执行质检，再移除人声、合并合格乐器轨，伴奏样本可用率和稳定性明显提升。</dd></div></dl>
+          <span class="impact">伴奏数据质量提升最明显的改动</span>
+        </article>
+        <article class="change-card">
+          <div class="change-title"><div><h3>目标任务分布补齐</h3><p class="swap"><span class="old">原始歌曲</span><i>→</i><span class="new">筛选后的 Suno 生成歌曲</span></p></div></div>
+          <dl class="bac"><div class="bac-row before"><dt>BEFORE</dt><dd>原始音乐与线上生成任务在 Prompt、歌词组织和成品分布上存在偏差。</dd></div><div class="bac-row change"><dt>CHANGE</dt><dd>由 Suno 生成候选歌曲，再经过音质、歌词、结构、语义、去重和人工抽检，形成微调数据。</dd></div><div class="bac-row after"><dt>AFTER</dt><dd>训练数据更接近目标任务分布，团队回归中带来的模型效果改善最明显。</dd></div></dl>
+          <span class="impact">整体模型效果提升最明显的批次</span>
+        </article>
+      </div>
+    </section>
+
+    <section id="scale">
+      <header class="section-head"><div class="section-no">04 / SCALE</div><div><h2>数据批次演进</h2><p class="section-desc">节奏是“拿到一批 → 清洗一批 → 训练回归一批”。下列数字为原始或筛选阶段的候选规模，不等同于最终训练集条数。</p></div></header>
+      <div class="evolution">
+        <article class="batch"><span class="batch-no">BATCH 01 · BASELINE</span><h3>供应商首批约 50 万</h3><p>供应商总候选约 400 万，首批先跑通接入、去重、质检、特征和 Manifest 交付。</p><div class="result">形成可重复运行的基线 Pipeline</div></article>
+        <article class="batch gain-tidal"><span class="batch-no">BATCH 02 · HI-FI</span><h3>Qobuz + Tidal</h3><p>Qobuz 约 3,000 万，语种筛选约 800 万；Tidal 约 2,000 万，其中约 200 万带歌词，筛选约 115 万。</p><div class="result">第一阶段关键增益：基础音质明显提升</div></article>
+        <article class="batch"><span class="batch-no">BATCH 03 · COVERAGE</span><h3>约 80.2 万补充数据</h3><p>全民 K 歌约 75 万、Hi-Res 约 5 万、实录约 2,000，补充中文、演唱场景和干净录制条件。</p><div class="result">补齐语言、风格与录制条件长尾</div></article>
+        <article class="batch gain-suno"><span class="batch-no">BATCH 04 · SYNTHETIC</span><h3>Suno 约 115 万</h3><p>生成候选经过音质、歌词、结构、语义、去重和人工抽检后，再进入微调数据。</p><div class="result">第二阶段关键增益：模型效果提升最明显</div></article>
+      </div>
+      <div class="scale-note"><div><small>DEDUP</small><strong>来源内 Meta 规范化与去重</strong></div><div><small>SELECTION</small><strong>质量门禁 + 分层采样 + 人工抽检</strong></div><div><small>VERSIONING</small><strong>批次、规则、模型与 Manifest 可追溯</strong></div></div>
+    </section>
+
+    <section id="accompaniment">
+      <header class="section-head"><div class="section-no">05 / STEMS</div><div><h2>伴奏样本：从双轨到五类中间轨</h2><p class="section-desc">Suno 公开方案提供 12 类 stem；项目结合现有标签、模型能力和处理成本，将中间结果归并为五类，用于逐轨质检和伴奏目标重建。</p></div></header>
+      <div class="stem-layout">
+        <article class="stem-panel">
+          <h3>完整歌曲 → 多轨 → 伴奏目标</h3>
+          <div class="stem-flow"><div class="mix">Full Mix</div><div class="stem-arrow">→</div><div class="stems"><div class="stem vocal">Vocals</div><div class="stem">Drums / Percussion</div><div class="stem">Bass</div><div class="stem">Piano / Keys</div><div class="stem">Guitar / Strings / Other</div></div></div>
+          <div class="merge"><span class="drop">移除 Vocals</span><span>→</span><strong>合并其余通过质检的 stem，得到 Accompaniment</strong></div>
+        </article>
+        <article class="target-panel"><h3>样本验收</h3><ul><li>所有 stem 使用统一起止点、采样率和增益规则</li><li>伴奏目标无明显人声与和声泄漏</li><li>人声条件不过量混入鼓点和器乐碎片</li><li>分离伪影、瞬态损伤和相位问题进入复核</li><li>低置信度 stem 归入 Other 或整条剔除</li></ul></article>
+      </div>
+    </section>
+
+    <section id="evaluation">
+      <header class="section-head"><div class="section-no">06 / EVALUATION</div><div><h2>固定评测与 Bad Case 回流</h2><p class="section-desc">自动指标负责大规模筛查和定位，盲听负责最终体验判断；同一版数据改动必须在固定测试集上对照。</p></div></header>
+      <div class="eval-layout">
+        <article class="eval-card"><h3>完整歌曲生成</h3><div class="metric-list"><div class="metric"><strong>音质与伪影</strong><span>MOS / 分维度听审</span></div><div class="metric"><strong>歌词完整性</strong><span>覆盖、漏唱、重复</span></div><div class="metric"><strong>段落结构</strong><span>边界、顺序、主副歌一致性</span></div><div class="metric"><strong>条件遵循</strong><span>Query、曲风、歌词对齐</span></div></div></article>
+        <article class="eval-card"><h3>清唱配伴奏</h3><div class="metric-list"><div class="metric"><strong>目标干净度</strong><span>人声泄漏、分离伪影</span></div><div class="metric"><strong>时间对齐</strong><span>节拍与起止位置</span></div><div class="metric"><strong>和声兼容</strong><span>调性、和弦与旋律冲突</span></div><div class="metric"><strong>风格一致性</strong><span>Prompt 与成品听感</span></div></div></article>
+      </div>
+      <div class="loop" aria-label="评测闭环"><div class="loop-step"><b>01</b><span>冻结测试集</span></div><div class="loop-step"><b>02</b><span>自动批量筛查</span></div><div class="loop-step"><b>03</b><span>匿名随机盲听</span></div><div class="loop-step"><b>04</b><span>Bad Case 归因</span></div><div class="loop-step"><b>05</b><span>回流对应处理节点</span></div></div>
+      <div class="closing">评测结果按数据批次、Pipeline 版本、模型版本和样本标签切片，避免只看总体均值掩盖语种、曲风、时长或来源问题。</div>
+      <div class="references">方法组件： <a href="https://github.com/tencent-ailab/MuQ">MuQ-MuLan</a><a href="https://github.com/ASLP-lab/SongFormer">SongFormer</a><a href="https://github.com/mir-aidj/all-in-one">All-In-One</a><a href="https://github.com/facebookresearch/demucs">Demucs</a><a href="https://arxiv.org/abs/2309.02612">BS-RoFormer</a><a href="https://suno.com/blog/stem-separation-updates">Suno 12-stem 公开方案</a></div>
+    </section>
+  </main>
+  <footer><div class="wrap">AI 音乐生成训练数据构建与评测 · 项目技术简报</div></footer>
+</body>
+</html>
