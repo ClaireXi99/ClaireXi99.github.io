@@ -47,6 +47,7 @@
     .system-band{display:grid;grid-template-columns:88px 1fr;border-bottom:1px solid var(--line)}
     .system-band:last-child{border-bottom:0}
     .band-label{display:flex;align-items:center;padding:14px 12px;background:#f8fafb;border-right:1px solid var(--line);color:var(--muted);font-size:11px;font-weight:750;letter-spacing:.05em}
+    .band-label em{display:block;margin-top:3px;color:#9aa5ad;font-size:9px;font-style:normal;font-weight:650;letter-spacing:.02em}
     .source-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:7px;padding:11px}
     .source{min-height:0;padding:9px 10px;border:1px solid var(--line);border-radius:6px;color:#44525d;background:#fff}
     .source strong{display:block;color:var(--ink);font-size:13px}.source b{display:block;margin-top:3px;color:var(--blue);font-size:15px}.source small{display:block;margin-top:2px;color:var(--muted);font-size:10px;line-height:1.4}
@@ -87,6 +88,7 @@
     .batch.gain-tidal{background:#f2f8fc;box-shadow:inset 0 3px 0 #5a9bc2}.batch.gain-suno{background:#f0f8f4;box-shadow:inset 0 3px 0 #5b9b7f}.gain-tidal .result{color:var(--blue)}.gain-suno .result{color:var(--green)}
     .scale-note{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:9px}
     .scale-note div{padding:9px 11px;border:1px solid var(--line);border-radius:6px;background:#fff}.scale-note small{display:inline;margin-right:7px;color:var(--muted);font-size:10px;font-weight:700;letter-spacing:.05em}.scale-note strong{display:inline;font-size:13px}
+    .observation{margin-top:8px;color:var(--muted);font-size:11px}
 
     .stem-layout{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}
     .stem-panel,.target-panel{padding:17px 18px;border:1px solid var(--line);border-radius:8px;background:var(--card)}
@@ -99,6 +101,7 @@
     .metric-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:10px}.metric{padding:8px 9px;border:1px solid var(--line);border-radius:5px;background:#fafbfc}.metric strong{display:block;font-size:12px}.metric span{display:block;margin-top:1px;color:var(--muted);font-size:10px}
     .loop{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;margin-top:10px;padding:13px 15px;border:1px solid var(--line);border-radius:8px;background:#fff}.loop-step{position:relative;text-align:center}.loop-step:not(:last-child)::after{content:"→";position:absolute;right:-11px;top:9px;color:#91a0ab;font-weight:750}.loop-step b{display:inline;margin-right:5px;color:var(--blue);font-size:10px}.loop-step span{display:inline;color:#46545f;font-size:12px}
     .closing{margin-top:10px;padding:10px 13px;border-left:3px solid var(--blue);background:var(--blue-soft);color:#385468;font-size:13px}
+    .protocol{display:grid;grid-template-columns:90px 1fr;gap:12px;margin-top:10px;padding:9px 12px;border:1px solid var(--line);border-radius:6px;background:#fff;color:#485762;font-size:12px}.protocol b{color:var(--blue);font-size:10px;letter-spacing:.05em}
     .references{padding-top:18px;color:var(--muted);font-size:11px}.references a{margin-right:12px;color:#536f82}
     footer{padding:17px 0 26px;border-top:1px solid var(--line);color:var(--muted);font-size:11px;background:#fff}
 
@@ -116,7 +119,7 @@
       .stage-wrap{padding:16px 13px}.stage-grid{grid-template-columns:1fr;gap:18px;min-width:0}.stage{min-height:0}.stage:not(:last-child)::after{content:"↓";right:auto;left:50%;top:auto;bottom:-18px;transform:translateX(-50%)}
       .output-grid{grid-template-columns:1fr;padding:13px}.contract{padding:13px}.batch{border-right:0;border-bottom:1px solid var(--line)}.batch:last-child{border-bottom:0}.batch::after{display:none!important}
       .stem-flow{grid-template-columns:1fr}.stem-arrow{padding:9px;transform:rotate(90deg)}.metric-list{grid-template-columns:1fr}
-      .loop{grid-template-columns:1fr;text-align:left}.loop-step{text-align:left;padding:0 0 12px;border-bottom:1px solid var(--line)}.loop-step:last-child{padding-bottom:0;border-bottom:0}.loop-step::after{display:none}
+      .protocol{grid-template-columns:1fr;gap:4px}.loop{grid-template-columns:1fr;text-align:left}.loop-step{text-align:left;padding:0 0 12px;border-bottom:1px solid var(--line)}.loop-step:last-child{padding-bottom:0;border-bottom:0}.loop-step::after{display:none}
     }
     @media print{body{background:#fff}.nav{display:none}.hero{padding:24px 0}.system,.change-card{box-shadow:none}section{break-inside:avoid}.change-card{break-inside:avoid}}
   </style>
@@ -137,29 +140,29 @@
       <header class="section-head"><div class="section-no">01 / TASKS</div><div><h2>模型任务与数据交付</h2><p class="section-desc">底层音频与 Meta 共用；训练样本根据音乐生成和伴奏生成分别组织。</p></div></header>
       <div class="task-table">
         <article class="task-row">
-          <div class="task-name"><span>MODEL 01</span><strong>音乐生成</strong><small>90–180s</small></div>
+          <div class="task-name"><span>MODEL 01</span><strong>音乐生成</strong><small>样本 90–180s</small></div>
           <div class="task-io"><span><b>Input</b> Query + 完整歌词 + 曲风</span><i>→</i><span><b>Output</b> 完整歌曲</span></div>
-          <div class="task-data"><b>训练数据</b> <code>{query, lyrics_full, caption, genre, structure_segments, muq_mulan_audio/text} → full_mix</code></div>
+          <div class="task-data"><b>数据交付</b> 条件 <code>{query, lyrics_full, genre}</code> · 目标 <code>full_mix</code> · 离线特征 <code>{caption, structure, MuQ-MuLan audio/text}</code></div>
         </article>
         <article class="task-row">
           <div class="task-name"><span>MODEL 02</span><strong>伴奏生成</strong></div>
           <div class="task-io"><span><b>Input</b> 人声音频 + 曲风 / 音频 Prompt</span><i>→</i><span><b>Output</b> 对齐伴奏</span></div>
-          <div class="task-data"><b>训练数据</b> <code>{vocal_uri, style/audio_prompt, bpm, key, stem_refs} → accompaniment_uri</code></div>
+          <div class="task-data"><b>数据交付</b> 条件 <code>{vocal_uri, style_prompt, audio_prompt}</code> · 目标 <code>accompaniment_uri</code> · 质检 <code>{bpm, key, stem_refs}</code></div>
         </article>
-        <div class="meta-row"><b>Common Meta</b><span>audio_id · source / batch · license · title / main_artist · language · duration · codec / channels · SR / BR / bit depth / file size · URI / checksum · pipeline version</span></div>
+        <div class="meta-row"><b>Common Meta</b><span>audio_id · source / batch · license_status · title / main_artist · language · duration · codec / channels · SR / BR / bit depth / file size · URI / checksum · pipeline version</span></div>
       </div>
     </section>
 
     <section id="pipeline">
       <header class="section-head"><div class="section-no">02 / PIPELINE</div><div><h2>从候选音源到训练样本</h2><p class="section-desc">Audio ID 贯穿原始文件、歌词、caption、结构、特征、分轨结果和训练清单；每个中间产物保留来源批次与处理版本。</p></div></header>
       <div class="system" aria-label="训练数据处理流程图">
-        <div class="system-band"><div class="band-label">SOURCE</div><div class="source-grid">
+        <div class="system-band"><div class="band-label"><span>SOURCE<em>候选阶段约数</em></span></div><div class="source-grid">
           <div class="source"><strong>供应商采购</strong><b>约 400 万</b><small>首批约 50 万，分批接入</small></div>
-          <div class="source"><strong>Qobuz</strong><b>约 3,000 万</b><small>按语种筛选约 800 万；中文不足 3 万</small></div>
-          <div class="source source-key tidal"><span class="source-impact">增益 01</span><strong>Tidal</strong><b>约 2,000 万</b><small>约 200 万带歌词；筛选约 115 万</small></div>
+          <div class="source"><strong>Qobuz</strong><b>约 3,000 万</b><small>目录候选 → 语种筛选约 800 万；中文覆盖有限</small></div>
+          <div class="source source-key tidal"><span class="source-impact">增益 01</span><strong>Tidal</strong><b>约 2,000 万</b><small>目录候选 → 带歌词约 200 万 → 规则筛选约 115 万</small></div>
           <div class="source"><strong>全民 K 歌</strong><b>约 75 万</b><small>K-sing 场景数据</small></div>
           <div class="source"><strong>Hi-Res 音源</strong><b>约 5 万</b><small>金曲光碟与高解析度音源</small></div>
-          <div class="source source-key suno"><span class="source-impact">增益 02</span><strong>Suno 生成歌曲</strong><b>约 115 万</b><small>生成后筛选、标注进入候选集</small></div>
+          <div class="source source-key suno"><span class="source-impact">增益 02</span><strong>Suno 生成歌曲</strong><b>约 115 万</b><small>生成候选 → 筛选与标注；最终入训量未披露</small></div>
           <div class="source"><strong>人工实录</strong><b>约 2,000</b><small>干净条件与专项验证</small></div>
         </div></div>
         <div class="system-band">
@@ -167,8 +170,8 @@
           <div class="stage-wrap">
             <div class="stage-grid">
               <div class="stage"><span class="stage-no">01</span><h3>接入与登记</h3><p>来源、授权、Audio ID、批次版本</p></div>
-              <div class="stage"><span class="stage-no">02</span><h3>Meta 规范化</h3><p>标题 / 主歌手归一，来源内去重</p></div>
-              <div class="stage"><span class="stage-no">03</span><h3>音质筛查</h3><p>SR、BR、位深、cutoff、flatness</p></div>
+              <div class="stage"><span class="stage-no">02</span><h3>Meta 规范化</h3><p>标题去版本括号、第一主歌手，来源内去重</p></div>
+              <div class="stage"><span class="stage-no">03</span><h3>音质筛查</h3><p>SR、BR、位深、cutoff、spectral flatness</p></div>
               <div class="stage"><span class="stage-no">04</span><h3>歌词与人声</h3><p>VAD、ASR、语种、歌词覆盖</p></div>
               <div class="stage"><span class="stage-no">05</span><h3>结构解析</h3><p>段落边界、标签与歌词对齐</p></div>
               <div class="stage"><span class="stage-no">06</span><h3>语义表征</h3><p>Caption、音频 / 文本 embedding</p></div>
@@ -176,7 +179,7 @@
             </div>
           </div>
         </div>
-        <div class="system-band"><div class="band-label">CONTRACT</div><div class="contract" aria-label="样本数据契约"><code>audio_id</code><i>→</i><code>audio / meta</code><i>→</i><code>lyrics / caption</code><i>→</i><code>quality_vector</code><i>→</i><code>structure</code><i>→</i><code>embeddings</code><i>→</i><code>stems</code><i>→</i><code>manifest</code></div></div>
+        <div class="system-band"><div class="band-label">CONTRACT</div><div class="contract" aria-label="样本数据契约"><code>audio_id</code><i>→</i><code>audio / meta</code><i>→</i><code>lyrics / caption</code><i>→</i><code>quality_vector</code><i>→</i><code>qc_status / reason_codes</code><i>→</i><code>structure</code><i>→</i><code>embeddings</code><i>→</i><code>stems</code><i>→</i><code>manifest</code></div></div>
         <div class="system-band"><div class="band-label">OUTPUT</div><div class="output-grid"><div class="output"><small>DATASET A</small><strong>完整歌曲训练集：Query / 歌词 / 结构 / 混音</strong></div><div class="output"><small>DATASET B</small><strong>伴奏训练集：人声条件 / 风格条件 / 伴奏目标</strong></div></div></div>
       </div>
     </section>
@@ -190,17 +193,17 @@
         </article>
         <article class="change-card">
           <div class="change-title"><div><h3>整曲歌词与段落结构</h3><p class="swap"><span class="old">无完整结构</span><i>→</i><span class="mid">All-In-One</span><i>→</i><span class="new">SongFormer</span></p></div></div>
-          <dl class="bac"><div class="bac-row before"><dt>BEFORE</dt><dd>歌词在前 30 秒唱完或到 180 秒仍未唱完；主歌、副歌与音乐段落不一致。</dd></div><div class="bac-row change"><dt>CHANGE</dt><dd>保留整篇歌词和句级时间信息；结构模型由 All-In-One 迁移到 SongFormer，将歌词片段对齐到 verse / chorus / bridge 等段落。</dd></div><div class="bac-row after"><dt>AFTER</dt><dd>歌词覆盖和段落完整性改善，长歌的结构一致性更稳定。</dd></div></dl>
+          <dl class="bac"><div class="bac-row before"><dt>BEFORE</dt><dd>歌词在前 30 秒唱完或到 180 秒仍未唱完；主歌、副歌与音乐段落不一致。</dd></div><div class="bac-row change"><dt>CHANGE</dt><dd>保留整篇歌词和句级时间信息；结构模型由 All-In-One 迁移到 SongFormer，将歌词片段对齐到 verse / chorus / bridge 等段落。</dd></div><div class="bac-row after"><dt>AFTER</dt><dd>团队回归中，歌词覆盖与段落完整性改善，长歌结构一致性更稳定。</dd></div></dl>
         </article>
         <article class="change-card">
           <div class="change-title"><div><h3>伴奏目标构建</h3><p class="swap"><span class="old">Demucs 2-stem</span><i>→</i><span class="new">BS-RoFormer 5 类中间轨</span></p></div></div>
-          <dl class="bac"><div class="bac-row before"><dt>BEFORE</dt><dd>Demucs 人声 / 伴奏二轨粗分，存在人声残留、伴奏串入人声轨和明显分离伪影。</dd></div><div class="bac-row change"><dt>CHANGE</dt><dd>参考 Suno 公开的 12-stem 分类方案，结合项目 checkpoint 和吞吐要求，落成五类中间轨；分离模型切换为 BS-RoFormer。</dd></div><div class="bac-row after"><dt>AFTER</dt><dd>可按轨定位污染并执行质检，再移除人声、合并合格乐器轨，伴奏样本可用率和稳定性明显提升。</dd></div></dl>
-          <span class="impact">伴奏数据质量提升最明显的改动</span>
+          <dl class="bac"><div class="bac-row before"><dt>BEFORE</dt><dd>Demucs 人声 / 伴奏二轨粗分，存在人声残留、伴奏串入人声轨和明显分离伪影。</dd></div><div class="bac-row change"><dt>CHANGE</dt><dd>参考 Suno 公开产品支持的 12 类 stem 输出粒度；项目按现有 checkpoint、标签体系和处理成本组织为五类中间结果，并切换至 BS-RoFormer。</dd></div><div class="bac-row after"><dt>AFTER</dt><dd>可按轨定位污染并执行质检，再移除人声、合并合格乐器轨；团队同期回归观察到伴奏样本稳定性改善。</dd></div></dl>
+          <span class="impact">批次相关观察 · 非 Suno 训练方案复现</span>
         </article>
         <article class="change-card">
           <div class="change-title"><div><h3>目标任务分布补齐</h3><p class="swap"><span class="old">原始歌曲</span><i>→</i><span class="new">筛选后的 Suno 生成歌曲</span></p></div></div>
-          <dl class="bac"><div class="bac-row before"><dt>BEFORE</dt><dd>原始音乐与线上生成任务在 Prompt、歌词组织和成品分布上存在偏差。</dd></div><div class="bac-row change"><dt>CHANGE</dt><dd>由 Suno 生成候选歌曲，再经过音质、歌词、结构、语义、去重和人工抽检，形成微调数据。</dd></div><div class="bac-row after"><dt>AFTER</dt><dd>训练数据更接近目标任务分布，团队回归中带来的模型效果改善最明显。</dd></div></dl>
-          <span class="impact">整体模型效果提升最明显的批次</span>
+          <dl class="bac"><div class="bac-row before"><dt>BEFORE</dt><dd>原始音乐与线上生成任务在 Prompt、歌词组织和成品分布上存在偏差。</dd></div><div class="bac-row change"><dt>CHANGE</dt><dd>由 Suno 生成候选歌曲，再经过音质、歌词、结构、语义、去重和人工抽检，形成微调数据。</dd></div><div class="bac-row after"><dt>AFTER</dt><dd>训练数据更接近目标任务分布；在当时各数据批次中，团队回归观察到的改善幅度最大。</dd></div></dl>
+          <span class="impact">批次相关观察 · 最终入训量未披露</span>
         </article>
       </div>
     </section>
@@ -209,34 +212,36 @@
       <header class="section-head"><div class="section-no">04 / SCALE</div><div><h2>数据批次演进</h2><p class="section-desc">节奏是“拿到一批 → 清洗一批 → 训练回归一批”。下列数字为原始或筛选阶段的候选规模，不等同于最终训练集条数。</p></div></header>
       <div class="evolution">
         <article class="batch"><span class="batch-no">BATCH 01 · BASELINE</span><h3>供应商首批约 50 万</h3><p>供应商总候选约 400 万，首批先跑通接入、去重、质检、特征和 Manifest 交付。</p><div class="result">形成可重复运行的基线 Pipeline</div></article>
-        <article class="batch gain-tidal"><span class="batch-no">BATCH 02 · HI-FI</span><h3>Qobuz + Tidal</h3><p>Qobuz 约 3,000 万，语种筛选约 800 万；Tidal 约 2,000 万，其中约 200 万带歌词，筛选约 115 万。</p><div class="result">第一阶段关键增益：基础音质明显提升</div></article>
-        <article class="batch"><span class="batch-no">BATCH 03 · COVERAGE</span><h3>约 80.2 万补充数据</h3><p>全民 K 歌约 75 万、Hi-Res 约 5 万、实录约 2,000，补充中文、演唱场景和干净录制条件。</p><div class="result">补齐语言、风格与录制条件长尾</div></article>
-        <article class="batch gain-suno"><span class="batch-no">BATCH 04 · SYNTHETIC</span><h3>Suno 约 115 万</h3><p>生成候选经过音质、歌词、结构、语义、去重和人工抽检后，再进入微调数据。</p><div class="result">第二阶段关键增益：模型效果提升最明显</div></article>
+        <article class="batch gain-tidal"><span class="batch-no">BATCH 02 · HI-FI</span><h3>Qobuz + Tidal</h3><p>Qobuz 目录候选约 3,000 万 → 语种筛选约 800 万；Tidal 目录候选约 2,000 万 → 带歌词约 200 万 → 规则筛选约 115 万。</p><div class="result">第一阶段关键增益：同期回归中音质维度改善</div></article>
+        <article class="batch"><span class="batch-no">BATCH 03 · COVERAGE</span><h3>约 80 万补充数据</h3><p>全民 K 歌约 75 万、Hi-Res 约 5 万、实录约 2,000，补充中文、演唱场景和干净录制条件。</p><div class="result">补齐语言、风格与录制条件长尾</div></article>
+        <article class="batch gain-suno"><span class="batch-no">BATCH 04 · SYNTHETIC</span><h3>Suno 约 115 万候选</h3><p>生成候选经过音质、歌词、结构、语义、去重和人工抽检后，再进入微调数据。</p><div class="result">第二阶段关键增益：当时各批次中观察改善最大</div></article>
       </div>
-      <div class="scale-note"><div><small>DEDUP</small><strong>来源内 Meta 规范化与去重</strong></div><div><small>SELECTION</small><strong>质量门禁 + 分层采样 + 人工抽检</strong></div><div><small>VERSIONING</small><strong>批次、规则、模型与 Manifest 可追溯</strong></div></div>
+      <div class="scale-note"><div><small>DEDUP</small><strong>来源内 Meta 去重已上线；跨源声纹 / embedding 去重仍在验证</strong></div><div><small>SELECTION</small><strong>质量门禁 + 分层采样 + 人工抽检</strong></div><div><small>VERSIONING</small><strong>批次、规则、模型与 Manifest 可追溯</strong></div></div>
+      <p class="observation">批次结果为团队同期回归观察；若模型版本、训练步数或采样配置未完全固定，不作单因素因果结论。</p>
     </section>
 
     <section id="accompaniment">
-      <header class="section-head"><div class="section-no">05 / STEMS</div><div><h2>伴奏样本：从双轨到五类中间轨</h2><p class="section-desc">Suno 公开方案提供 12 类 stem；项目结合现有标签、模型能力和处理成本，将中间结果归并为五类，用于逐轨质检和伴奏目标重建。</p></div></header>
+      <header class="section-head"><div class="section-no">05 / STEMS</div><div><h2>伴奏样本：从双轨到五类中间轨</h2><p class="section-desc">Suno 公开产品支持 12 类 stem 输出；项目仅参考其输出粒度，结合现有 checkpoint、标签体系和处理成本组织五类中间结果，并非复现 Suno 模型或训练方案。</p></div></header>
       <div class="stem-layout">
         <article class="stem-panel">
           <h3>完整歌曲 → 多轨 → 伴奏目标</h3>
           <div class="stem-flow"><div class="mix">Full Mix</div><div class="stem-arrow">→</div><div class="stems"><div class="stem vocal">Vocals</div><div class="stem">Drums / Percussion</div><div class="stem">Bass</div><div class="stem">Piano / Keys</div><div class="stem">Guitar / Strings / Other</div></div></div>
           <div class="merge"><span class="drop">移除 Vocals</span><span>→</span><strong>合并其余通过质检的 stem，得到 Accompaniment</strong></div>
         </article>
-        <article class="target-panel"><h3>样本验收</h3><ul><li>所有 stem 使用统一起止点、采样率和增益规则</li><li>伴奏目标无明显人声与和声泄漏</li><li>人声条件不过量混入鼓点和器乐碎片</li><li>分离伪影、瞬态损伤和相位问题进入复核</li><li>低置信度 stem 归入 Other 或整条剔除</li></ul></article>
+        <article class="target-panel"><h3>样本验收</h3><ul><li>所有 stem 使用统一起止点、采样率和增益规则</li><li>伴奏目标无明显人声与和声泄漏</li><li>人声条件不过量混入鼓点和器乐碎片</li><li>分离伪影、瞬态损伤和相位问题进入复核</li><li>出现明显污染或伪影的 stem 归入 Other 或整条剔除</li></ul></article>
       </div>
     </section>
 
     <section id="evaluation">
-      <header class="section-head"><div class="section-no">06 / EVALUATION</div><div><h2>固定评测与 Bad Case 回流</h2><p class="section-desc">自动指标负责大规模筛查和定位，盲听负责最终体验判断；同一版数据改动必须在固定测试集上对照。</p></div></header>
+      <header class="section-head"><div class="section-no">06 / EVALUATION</div><div><h2>固定评测与 Bad Case 回流</h2><p class="section-desc">自动指标负责大规模筛查和定位，版本盲评负责最终体验判断；同一版数据改动必须在固定测试集上对照。</p></div></header>
       <div class="eval-layout">
         <article class="eval-card"><h3>完整歌曲生成</h3><div class="metric-list"><div class="metric"><strong>音质与伪影</strong><span>MOS / 分维度听审</span></div><div class="metric"><strong>歌词完整性</strong><span>覆盖、漏唱、重复</span></div><div class="metric"><strong>段落结构</strong><span>边界、顺序、主副歌一致性</span></div><div class="metric"><strong>条件遵循</strong><span>Query、曲风、歌词对齐</span></div></div></article>
         <article class="eval-card"><h3>清唱配伴奏</h3><div class="metric-list"><div class="metric"><strong>目标干净度</strong><span>人声泄漏、分离伪影</span></div><div class="metric"><strong>时间对齐</strong><span>节拍与起止位置</span></div><div class="metric"><strong>和声兼容</strong><span>调性、和弦与旋律冲突</span></div><div class="metric"><strong>风格一致性</strong><span>Prompt 与成品听感</span></div></div></article>
       </div>
-      <div class="loop" aria-label="评测闭环"><div class="loop-step"><b>01</b><span>冻结测试集</span></div><div class="loop-step"><b>02</b><span>自动批量筛查</span></div><div class="loop-step"><b>03</b><span>匿名随机盲听</span></div><div class="loop-step"><b>04</b><span>Bad Case 归因</span></div><div class="loop-step"><b>05</b><span>回流对应处理节点</span></div></div>
+      <div class="protocol"><b>评测协议</b><span>固定题集 · 相同生成次数与采样配置 · 隐藏版本 · 分维度评分 · 分歧复核 · 按语种 / 曲风 / 时长切片</span></div>
+      <div class="loop" aria-label="评测闭环"><div class="loop-step"><b>01</b><span>冻结测试集</span></div><div class="loop-step"><b>02</b><span>自动批量筛查</span></div><div class="loop-step"><b>03</b><span>版本盲评</span></div><div class="loop-step"><b>04</b><span>Bad Case 归因</span></div><div class="loop-step"><b>05</b><span>回流对应处理节点</span></div></div>
       <div class="closing">评测结果按数据批次、Pipeline 版本、模型版本和样本标签切片，避免只看总体均值掩盖语种、曲风、时长或来源问题。</div>
-      <div class="references">方法组件： <a href="https://github.com/tencent-ailab/MuQ">MuQ-MuLan</a><a href="https://github.com/ASLP-lab/SongFormer">SongFormer</a><a href="https://github.com/mir-aidj/all-in-one">All-In-One</a><a href="https://github.com/facebookresearch/demucs">Demucs</a><a href="https://arxiv.org/abs/2309.02612">BS-RoFormer</a><a href="https://suno.com/blog/stem-separation-updates">Suno 12-stem 公开方案</a></div>
+      <div class="references">方法组件： <a href="https://github.com/tencent-ailab/MuQ">MuQ-MuLan</a><a href="https://github.com/ASLP-lab/SongFormer">SongFormer</a><a href="https://github.com/mir-aidj/all-in-one">All-In-One</a><a href="https://github.com/facebookresearch/demucs">Demucs</a><a href="https://arxiv.org/abs/2309.02612">BS-RoFormer</a><a href="https://suno.com/blog/stem-separation-updates">Suno 12-stem 公开产品</a></div>
     </section>
   </main>
   <footer><div class="wrap">AI 音乐生成训练数据构建与评测 · 项目技术简报</div></footer>
