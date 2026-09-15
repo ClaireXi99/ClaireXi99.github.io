@@ -1,0 +1,455 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="面向新人的 FX 数据分析与 AI 应用入门：行情数据、清洗校验、异常识别、回测评估与业务落地。">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <link rel="icon" href="data:,">
+  <title>FX 数据分析与 AI 应用</title>
+  <style>
+    :root{
+      --ink:#15222b;--sub:#52616b;--muted:#77848d;--paper:#f4f6f7;--card:#fff;
+      --line:#d9e0e4;--line-strong:#c5d0d6;--teal:#176b68;--teal-soft:#eaf5f3;
+      --blue:#2c6388;--blue-soft:#edf4f8;--amber:#8b6727;--amber-soft:#faf4e8;
+      --red:#8a4c4c;--red-soft:#f9eeee;--green:#326f58;--green-soft:#edf6f1;
+      --radius:9px;--shadow:0 12px 30px rgba(23,40,49,.055)
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth;scroll-padding-top:56px}
+    body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.58 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;-webkit-font-smoothing:antialiased}
+    a{color:var(--blue);text-underline-offset:3px}
+    code,.mono{font:12px/1.48 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+    .wrap{width:min(1160px,calc(100% - 40px));margin:0 auto}
+    .hero{padding:19px 0 17px;background:#fff;border-bottom:1px solid var(--line)}
+    .hero-line{display:flex;align-items:flex-end;justify-content:space-between;gap:18px}
+    h1{margin:0;font-size:clamp(23px,2.7vw,29px);line-height:1.25;letter-spacing:-.022em;font-weight:700}
+    .hero p{margin:4px 0 0;color:var(--sub);font-size:13px}
+    .hero-tag{flex:0 0 auto;padding:4px 8px;border:1px solid #c9dcda;border-radius:5px;background:var(--teal-soft);color:var(--teal);font-size:10px;font-weight:760;letter-spacing:.04em}
+    .nav{position:sticky;top:0;z-index:10;background:rgba(255,255,255,.96);border-bottom:1px solid var(--line);backdrop-filter:blur(12px);overflow-x:auto}
+    .nav-shell{display:flex;align-items:center;gap:20px;white-space:nowrap}
+    .tabs{display:flex;align-items:center;gap:3px;padding-right:18px;border-right:1px solid var(--line)}
+    .tab-btn{appearance:none;border:0;border-bottom:2px solid transparent;padding:10px 8px 8px;background:transparent;color:#6a7780;font:700 12px/1.4 inherit;cursor:pointer}
+    .tab-btn[aria-selected="true"]{border-bottom-color:var(--teal);color:var(--teal)}
+    .nav-links{display:flex;gap:20px}.nav-links[hidden]{display:none}
+    .nav a{padding:9px 0;color:#4e5b64;text-decoration:none;font-size:11px;font-weight:650}
+    main{padding:3px 0 44px}
+    .tab-panel[hidden]{display:none}
+    section{padding:27px 0;border-bottom:1px solid var(--line)}
+    section:last-child{border-bottom:0}
+    .section-head{display:grid;grid-template-columns:76px minmax(0,1fr);gap:10px;margin-bottom:14px}
+    .section-no{padding-top:4px;color:var(--teal);font-size:10px;font-weight:800;letter-spacing:.07em}
+    h2{margin:0;font-size:22px;line-height:1.3;letter-spacing:-.015em;font-weight:700}
+    .section-desc{max-width:930px;margin:3px 0 0;color:var(--sub);font-size:13px}
+    h3{margin:0;font-size:15px;line-height:1.4}
+    p{margin:7px 0 0}
+    .note{color:var(--muted);font-size:11px}
+
+    .role-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid var(--line-strong);border-radius:var(--radius);background:#fff;overflow:hidden;box-shadow:var(--shadow)}
+    .role{padding:13px 14px;border-right:1px solid var(--line)}.role:last-child{border-right:0}
+    .role b{display:block;color:var(--teal);font-size:10px;letter-spacing:.05em}.role strong{display:block;margin-top:4px;font-size:14px}.role span{display:block;margin-top:4px;color:var(--sub);font-size:12px;line-height:1.48}
+    .deliverables{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}.deliverables span{padding:5px 8px;border:1px solid var(--line);border-radius:5px;background:#fff;color:#4c5a64;font-size:11px}
+    .boundary{margin-top:9px;padding:9px 12px;border-left:3px solid var(--teal);background:var(--teal-soft);color:#365b5a;font-size:12px}
+
+    .quote-layout{display:grid;grid-template-columns:.9fr 1.1fr;gap:10px}
+    .quote-card,.plain-card{padding:14px 15px;border:1px solid var(--line);border-radius:var(--radius);background:#fff}
+    .quote{display:flex;align-items:stretch;gap:7px;margin-top:10px}
+    .quote-side{flex:1;padding:10px;border-radius:6px;background:#f7f9fa;border:1px solid var(--line)}
+    .quote-side small{display:block;color:var(--muted);font-size:10px;font-weight:700}.quote-side strong{display:block;margin-top:2px;font-size:22px;letter-spacing:.02em}.quote-side.ask{border-color:#bdd8d5;background:var(--teal-soft)}
+    .formula{margin-top:9px;padding:8px 10px;border-radius:6px;background:#202c33;color:#deeaed;overflow-x:auto;white-space:nowrap;font-size:11px}
+    .term-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:9px}
+    .term{padding:8px 9px;border:1px solid var(--line);border-radius:5px;background:#fafbfb}
+    .term b{font-size:12px}.term span{display:block;margin-top:2px;color:var(--sub);font-size:11px;line-height:1.45}
+    .deal{margin-top:10px;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+    .deal-row{display:grid;grid-template-columns:78px 1fr;gap:9px;padding:7px 9px;border-bottom:1px solid var(--line);font-size:12px}.deal-row:last-child{border-bottom:0}.deal-row b{color:var(--teal);font-size:10px;letter-spacing:.04em}.deal-row span{color:#41515b}
+
+    .pipeline{border:1px solid var(--line-strong);border-radius:var(--radius);background:#fff;overflow:hidden;box-shadow:var(--shadow)}
+    .flow{display:grid;grid-template-columns:repeat(8,minmax(105px,1fr));gap:16px;padding:13px;overflow-x:auto}
+    .flow-step{position:relative;min-height:76px;padding:9px;border:1px solid var(--line);border-radius:6px;background:#fff}
+    .flow-step:not(:last-child)::after{content:"→";position:absolute;right:-13px;top:27px;color:#94a1a9;font-weight:700}
+    .flow-step b{display:block;color:var(--teal);font-size:9px;letter-spacing:.05em}.flow-step strong{display:block;margin-top:3px;font-size:12px}.flow-step span{display:block;margin-top:3px;color:var(--muted);font-size:10px;line-height:1.4}
+    .schema{display:grid;grid-template-columns:122px 1fr;border-top:1px solid var(--line)}
+    .schema b{padding:10px 12px;background:#f8fafb;border-right:1px solid var(--line);color:var(--muted);font-size:10px;letter-spacing:.05em}
+    .schema code{padding:9px 12px;color:#33505e;overflow-wrap:anywhere}
+    .checks{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;margin-top:9px}
+    .check{padding:9px 10px;border:1px solid var(--line);border-radius:6px;background:#fff}.check strong{display:block;font-size:12px}.check span{display:block;margin-top:3px;color:var(--muted);font-size:10px;line-height:1.4}
+    .check code{color:var(--red);font-size:10px}
+    .code-pair{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}.code-card{border:1px solid var(--line);border-radius:7px;background:#fff;overflow:hidden}.code-card h3{padding:8px 10px;border-bottom:1px solid var(--line);background:#f8fafb;font-size:11px}.code-card pre{margin:0;padding:10px 11px;background:#202c33;color:#dce8ec;font:10px/1.52 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;white-space:pre-wrap;overflow-x:auto}.code-card p{margin:0;padding:7px 10px;color:var(--muted);font-size:9px}
+
+    .split-alert{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+    .alert-type{padding:11px 12px;border:1px solid var(--line);border-radius:7px;background:#fff}
+    .alert-type b{display:inline-block;margin-right:7px;color:var(--teal);font-size:10px;letter-spacing:.05em}.alert-type strong{font-size:13px}.alert-type p{color:var(--sub);font-size:11px;line-height:1.48}
+    .alert-type.transaction{border-color:#e1d4b9;background:var(--amber-soft)}.alert-type.transaction b{color:var(--amber)}
+    .case{border:1px solid var(--line-strong);border-radius:11px;background:#fff;overflow:hidden;box-shadow:var(--shadow)}
+    .case-title{display:flex;justify-content:space-between;gap:14px;padding:12px 14px;background:#f8fafb;border-bottom:1px solid var(--line)}
+    .case-title span{color:var(--muted);font-size:10px}
+    .case-body{display:grid;grid-template-columns:.92fr 1.08fr}
+    .case-panel{padding:13px 14px}.case-panel:first-child{border-right:1px solid var(--line)}
+    .ticks{margin-top:8px;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+    .tick{display:grid;grid-template-columns:72px 1fr 1fr 1fr;gap:5px;padding:6px 8px;border-bottom:1px solid var(--line);font-size:11px}.tick:last-child{border-bottom:0}.tick.head{background:#f7f9fa;color:var(--muted);font-size:9px;font-weight:750}.tick.bad{background:var(--red-soft);color:var(--red);font-weight:680}
+    .calc-list{margin-top:8px;border-top:1px solid var(--line)}
+    .calc{display:grid;grid-template-columns:126px 1fr;gap:8px;padding:7px 0;border-bottom:1px solid var(--line)}.calc:last-child{border-bottom:0}.calc b{font-size:10px;color:var(--muted)}.calc span{font:11px/1.48 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#344952}
+    .decision{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:8px}.decision div{padding:8px;border:1px solid var(--line);border-radius:5px;background:#fafbfb}.decision b{display:block;color:var(--teal);font-size:9px}.decision span{display:block;margin-top:2px;color:#42515b;font-size:10px;line-height:1.4}
+    .case-result{padding:10px 14px;border-top:1px solid #cce0da;background:var(--green-soft);color:#315e4d;font-size:12px}.case-result code{font-weight:700;color:var(--green)}
+
+    .model-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+    .model-card{padding:12px 13px;border:1px solid var(--line);border-radius:7px;background:#fff}
+    .model-card .tag{color:var(--teal);font-size:9px;font-weight:800;letter-spacing:.05em}.model-card h3{margin-top:4px}.model-card p{color:var(--sub);font-size:11px}.model-card .use{margin-top:7px;padding-top:7px;border-top:1px solid var(--line);color:#344952;font-size:10px}
+    .time-split{display:grid;grid-template-columns:2.2fr .65fr .65fr;gap:3px;margin-top:10px}.time-split div{padding:7px 9px;border-radius:5px;color:#fff;font-size:10px;font-weight:700}.train{background:#517786}.valid{background:#8b6f3f}.test{background:#416d59}
+    .metric-case{display:grid;grid-template-columns:.92fr 1.08fr;gap:8px;margin-top:8px}
+    .matrix,.metrics{padding:11px 12px;border:1px solid var(--line);border-radius:7px;background:#fff}
+    .matrix-grid{display:grid;grid-template-columns:85px 1fr 1fr;gap:3px;margin-top:8px}.matrix-grid span{padding:6px;text-align:center;border-radius:4px;background:#f6f8f9;font-size:10px}.matrix-grid .good{background:var(--green-soft);color:var(--green);font-weight:700}.matrix-grid .warn{background:var(--red-soft);color:var(--red);font-weight:700}.matrix-grid .axis{background:transparent;color:var(--muted)}
+    .metric-row{display:grid;grid-template-columns:112px 1fr;gap:8px;padding:7px 0;border-bottom:1px solid var(--line)}.metric-row:last-child{border-bottom:0}.metric-row b{font-size:10px;color:var(--muted)}.metric-row span{font-size:11px;color:#3d4e58}.metric-row code{color:var(--teal);font-weight:700}
+    .pitfalls{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:8px}.pitfall{padding:8px 9px;border:1px solid #e1d4b9;border-radius:5px;background:var(--amber-soft)}.pitfall b{display:block;color:var(--amber);font-size:10px}.pitfall span{display:block;margin-top:2px;color:#6e5d3f;font-size:10px;line-height:1.4}
+
+    .scene-table{border:1px solid var(--line);border-radius:var(--radius);background:#fff;overflow:hidden}
+    .scene-row{display:grid;grid-template-columns:150px 1fr 1fr 1fr;border-bottom:1px solid var(--line)}.scene-row:last-child{border-bottom:0}.scene-row>div{padding:9px 11px;border-right:1px solid var(--line);font-size:11px}.scene-row>div:last-child{border-right:0}.scene-row.head{background:#f7f9fa;color:var(--muted);font-size:9px;font-weight:750}.scene-name b{display:block;font-size:12px}.scene-name span{display:block;margin-top:2px;color:var(--muted);font-size:9px}.guard{color:var(--red)}
+    .deploy-loop{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:14px;margin-top:9px;padding:11px;border:1px solid var(--line);border-radius:7px;background:#fff}.deploy-step{position:relative;text-align:center;font-size:10px;color:#42515a}.deploy-step:not(:last-child)::after{content:"→";position:absolute;right:-11px;color:#97a3aa}.deploy-step b{display:block;color:var(--teal);font-size:9px}.deploy-step span{display:block;margin-top:2px}
+
+    .transfer-table{border:1px solid var(--line);border-radius:var(--radius);background:#fff;overflow:hidden}
+    .transfer-row{display:grid;grid-template-columns:1fr 1fr 1.2fr;border-bottom:1px solid var(--line)}.transfer-row:last-child{border-bottom:0}.transfer-row>div{padding:8px 11px;border-right:1px solid var(--line);font-size:11px}.transfer-row>div:last-child{border-right:0}.transfer-row.head{background:#f7f9fa;color:var(--muted);font-size:9px;font-weight:750}.transfer-row b{color:var(--teal)}
+    .ramp{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:9px}.ramp-step{padding:10px 11px;border:1px solid var(--line);border-radius:6px;background:#fff}.ramp-step b{display:block;color:var(--teal);font-size:9px}.ramp-step strong{display:block;margin-top:3px;font-size:12px}.ramp-step span{display:block;margin-top:3px;color:var(--muted);font-size:10px;line-height:1.42}
+    .minimum{margin-top:9px;padding:10px 12px;border:1px solid #c8dbd8;border-radius:7px;background:var(--teal-soft)}.minimum b{color:var(--teal);font-size:11px}.minimum span{margin-left:7px;color:#3d5d5b;font-size:11px}
+    .ai-summary{display:grid;grid-template-columns:1.05fr .95fr;gap:8px}
+    .ai-summary .plain-card:first-child{border-top:3px solid var(--blue)}.ai-summary .plain-card:last-child{border-top:3px solid var(--teal)}
+    .ai-summary .eyebrow{color:var(--muted);font-size:9px;font-weight:800;letter-spacing:.06em}.ai-summary h3{margin-top:4px}.ai-summary p{color:var(--sub);font-size:12px}
+    .ai-summary .output-line{margin-top:8px;padding:7px 9px;border-radius:5px;background:#f6f8f9;color:#40515b;font-size:10px}
+    .stack-map{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));border:1px solid var(--line-strong);border-radius:var(--radius);background:#fff;overflow:hidden;box-shadow:var(--shadow)}
+    .stack-card{padding:13px 12px;border-right:1px solid var(--line)}.stack-card:last-child{border-right:0}.stack-card b{display:block;color:var(--teal);font-size:9px;letter-spacing:.05em}.stack-card strong{display:block;margin-top:4px;font-size:13px}.stack-card span{display:block;margin-top:3px;color:var(--sub);font-size:10px;line-height:1.43}.stack-card code{display:block;margin-top:6px;color:var(--blue);font-size:9px}
+    .agent-flow{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:15px;padding:12px;border:1px solid var(--line);border-radius:var(--radius);background:#fff}
+    .agent-step{position:relative;padding:9px;border:1px solid var(--line);border-radius:6px;background:#fafbfb}.agent-step:not(:last-child)::after{content:"→";position:absolute;right:-12px;top:29px;color:#94a1a9;font-weight:700}.agent-step b{display:block;color:var(--teal);font-size:9px}.agent-step strong{display:block;margin-top:3px;font-size:11px}.agent-step span{display:block;margin-top:2px;color:var(--muted);font-size:9px;line-height:1.4}
+    .placement{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.place{display:grid;grid-template-columns:145px 1fr;padding:10px 11px;border:1px solid var(--line);border-radius:6px;background:#fff}.place b{color:var(--teal);font-size:11px}.place span{color:var(--sub);font-size:11px}
+    .priority{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}.priority div{padding:10px 11px;border:1px solid var(--line);border-radius:6px;background:#fff}.priority b{display:block;color:var(--teal);font-size:9px}.priority strong{display:block;margin-top:3px;font-size:12px}.priority span{display:block;margin-top:3px;color:var(--muted);font-size:10px;line-height:1.42}
+    .answer-box{margin-top:9px;padding:12px 14px;border-left:3px solid var(--teal);background:var(--teal-soft);color:#345755;font-size:12px}.answer-box b{display:block;margin-bottom:4px;color:var(--teal);font-size:10px;letter-spacing:.05em}
+    .refs{padding-top:17px;color:var(--muted);font-size:10px}.refs a{margin-right:12px;color:#4e7081}
+    footer{padding:16px 0 24px;border-top:1px solid var(--line);background:#fff;color:var(--muted);font-size:10px}
+
+    @media(max-width:980px){.role-strip{grid-template-columns:repeat(2,1fr)}.role:nth-child(2){border-right:0}.role:nth-child(-n+2){border-bottom:1px solid var(--line)}.checks{grid-template-columns:repeat(3,1fr)}.scene-row{grid-template-columns:125px 1fr 1fr}.scene-row>div:nth-child(4){grid-column:2/4;border-top:1px dashed var(--line)}.scene-row.head>div:nth-child(4){display:none}.stack-map{grid-template-columns:repeat(3,1fr)}.stack-card{border-bottom:1px solid var(--line)}.stack-card:nth-child(3){border-right:0}.stack-card:nth-child(4),.stack-card:nth-child(5){border-bottom:0}.agent-flow{grid-template-columns:repeat(3,1fr);row-gap:16px}.agent-step:nth-child(3)::after{display:none}}
+    @media(max-width:760px){
+      .quote-layout,.case-body,.metric-case,.code-pair,.ai-summary{grid-template-columns:1fr}.case-panel:first-child{border-right:0;border-bottom:1px solid var(--line)}.model-grid{grid-template-columns:1fr}.checks{grid-template-columns:repeat(2,1fr)}.pitfalls,.ramp,.priority{grid-template-columns:repeat(2,1fr)}
+      .scene-row{grid-template-columns:1fr}.scene-row>div{border-right:0;border-bottom:1px dashed var(--line)}.scene-row>div:last-child{border-bottom:0}.scene-row>div:nth-child(4){grid-column:auto}.scene-row.head{display:none}
+      .transfer-row{grid-template-columns:1fr 1fr}.transfer-row>div:nth-child(3){grid-column:1/3;border-top:1px dashed var(--line)}.transfer-row.head>div:nth-child(3){display:none}
+      .deploy-loop{grid-template-columns:repeat(3,1fr);row-gap:18px}.deploy-step:nth-child(3)::after{display:none}
+    }
+    @media(max-width:560px){
+      .wrap{width:min(100% - 24px,1160px)}.hero-line{align-items:flex-start}.hero-tag{display:none}.nav-shell{gap:14px}.tabs{padding-right:12px}.nav-links{gap:16px}.section-head{grid-template-columns:1fr;gap:3px}.section-no{padding:0}h2{font-size:20px}
+      .role-strip,.term-grid,.split-alert,.checks,.pitfalls,.ramp{grid-template-columns:1fr}.role{border-right:0;border-bottom:1px solid var(--line)}.role:last-child{border-bottom:0}.role:nth-child(2){border-right:0}.role:nth-child(-n+2){border-bottom:1px solid var(--line)}
+      .quote{flex-direction:column}.schema{grid-template-columns:1fr}.schema b{border-right:0;border-bottom:1px solid var(--line)}.tick{grid-template-columns:58px 1fr 1fr}.tick span:nth-child(4){display:none}.calc{grid-template-columns:1fr;gap:2px}.decision{grid-template-columns:1fr}
+      .time-split{grid-template-columns:1.6fr .8fr .8fr}.matrix-grid{grid-template-columns:75px 1fr 1fr}.transfer-row{grid-template-columns:1fr}.transfer-row>div:nth-child(3){grid-column:auto}.transfer-row.head{display:none}.deploy-loop{grid-template-columns:1fr;text-align:left}.deploy-step{text-align:left;padding-bottom:8px;border-bottom:1px solid var(--line)}.deploy-step:last-child{border-bottom:0;padding-bottom:0}.deploy-step::after{display:none!important}.minimum span{display:block;margin:4px 0 0}
+      .stack-map,.agent-flow,.placement,.priority{grid-template-columns:1fr}.stack-card{border-right:0;border-bottom:1px solid var(--line)!important}.stack-card:last-child{border-bottom:0!important}.agent-step{padding:9px 10px}.agent-step::after{display:none!important}.place{grid-template-columns:1fr;gap:3px}
+    }
+    @media print{body{background:#fff}.nav{display:none}.hero{padding:18px 0}.role-strip,.pipeline,.case{box-shadow:none}section{break-inside:avoid}}
+  </style>
+</head>
+<body>
+  <header class="hero"><div class="wrap hero-line"><div><h1>FX 数据分析与 AI 应用</h1><p>从一笔外汇报价，到数据清洗、异常识别、回测与业务落地</p></div><span class="hero-tag">新人入门 · JD 知识地图</span></div></header>
+
+  <nav class="nav" aria-label="页面导航"><div class="wrap"><div class="nav-shell">
+    <div class="tabs" role="tablist" aria-label="内容切换">
+      <button class="tab-btn" id="guide-tab" type="button" role="tab" aria-controls="guide-panel" aria-selected="true" data-tab="guide">01 · FX 入门</button>
+      <button class="tab-btn" id="ai-tab" type="button" role="tab" aria-controls="ai-panel" aria-selected="false" data-tab="ai">02 · AI 的作用</button>
+    </div>
+    <div class="nav-links" id="guide-nav"><a href="#role">岗位</a><a href="#basics">FX 基础</a><a href="#data">数据管线</a><a href="#case">完整案例</a><a href="#evaluation">回测评估</a><a href="#business">业务应用</a><a href="#transfer">经验迁移</a></div>
+    <div class="nav-links" id="ai-nav" hidden><a href="#ai-overview">两类 AI</a><a href="#ai-stack">组件分工</a><a href="#ai-run">运行案例</a><a href="#ai-placement">知识放哪</a><a href="#ai-jd">JD 关系</a></div>
+  </div></div></nav>
+
+  <main class="wrap">
+    <div class="tab-panel" id="guide-panel" role="tabpanel" aria-labelledby="guide-tab">
+    <section id="role">
+      <header class="section-head"><div class="section-no">01 / ROLE</div><div><h2>这不是单一的数据分析岗</h2><p class="section-desc">岗位把数据工程、日常分析、轻量建模和业务落地放在一起。核心判断标准不是“用了多复杂的模型”，而是数据是否可信、结果是否可验证、建议是否能进入业务流程。</p></div></header>
+      <div class="role-strip">
+        <article class="role"><b>01 · DATA</b><strong>先把数据做对</strong><span>采集、统一口径、去重、校验、监控时效性。</span></article>
+        <article class="role"><b>02 · ANALYSIS</b><strong>再把问题讲清</strong><span>定位异常批次、拆分原因、形成日报与运行报告。</span></article>
+        <article class="role"><b>03 · MODEL</b><strong>用模型减少人工</strong><span>特征、标签、训练、阈值、时间回测、Bad Case 回流。</span></article>
+        <article class="role"><b>04 · BUSINESS</b><strong>接进真实流程</strong><span>服务行情预警、对客报价、风险敞口和平盘建议。</span></article>
+      </div>
+      <div class="deliverables"><span>干净行情表</span><span>异常明细与原因码</span><span>模型跑批报告</span><span>时间回测报告</span><span>阈值 / 策略建议</span><span>上线监控看板</span></div>
+      <div class="boundary"><strong>先看清岗位的难点：</strong>“数据标注、跑批、评测”是数据侧工作；“独立训练、回测并落地异常交易模型”已接近应用算法职责。新人要补的不只是模型，还包括 FX 报价、敞口、交易成本、时间序列防泄漏和风控边界。</div>
+    </section>
+
+    <section id="basics">
+      <header class="section-head"><div class="section-no">02 / FX BASICS</div><div><h2>先读懂一笔 EUR/USD 报价</h2><p class="section-desc">EUR/USD = 1.0850 表示 1 欧元可兑换 1.0850 美元。EUR 是基础货币，USD 是计价货币；价格上涨表示欧元相对美元升值。</p></div></header>
+      <div class="quote-layout">
+        <article class="quote-card">
+          <h3>市场报价：EUR/USD 1.0849 / 1.0851</h3>
+          <div class="quote"><div class="quote-side"><small>BID · 市场买入 EUR</small><strong>1.0849</strong></div><div class="quote-side ask"><small>ASK · 市场卖出 EUR</small><strong>1.0851</strong></div></div>
+          <div class="formula">mid = (1.0849 + 1.0851) / 2 = 1.0850　·　spread = 0.0002 = 2 pips</div>
+          <p class="note">EUR/USD 通常把小数点后第 4 位视为 1 pip：0.0001。日元货币对通常看第 2 位，不能统一乘 10,000。</p>
+        </article>
+        <article class="plain-card">
+          <h3>六个高频概念</h3>
+          <div class="term-grid">
+            <div class="term"><b>中间价（Mid）</b><span>Bid 与 Ask 的中点，常用于算收益率；它不一定是实际成交价。</span></div>
+            <div class="term"><b>点差（Spread）</b><span>Ask − Bid，是交易成本和流动性的重要信号；通常越窄越容易成交。</span></div>
+            <div class="term"><b>收益率（Return）</b><span>比较相邻时点的价格变化；模型常用收益率而不是绝对汇率。</span></div>
+            <div class="term"><b>波动率（Volatility）</b><span>一段时间内收益率的离散程度；高波动不等于方向一定上涨。</span></div>
+            <div class="term"><b>流动性（Liquidity）</b><span>能否用较小成本快速成交；可从点差、深度、报价更新频率观察。</span></div>
+            <div class="term"><b>敞口（Exposure）</b><span>持有某种货币后，汇率变化可能带来的盈亏风险。</span></div>
+          </div>
+        </article>
+      </div>
+      <div class="deal">
+        <div class="deal-row"><b>对客报价</b><span>市场为 1.0849 / 1.0851，平台给客户 1.0847 / 1.0853。报价要覆盖市场点差、波动风险、平盘成本和业务利润。</span></div>
+        <div class="deal-row"><b>一笔交易</b><span>客户按 1.0853 买入 EUR 100,000；平台随后按市场 Ask 1.0851 买回 EUR 对冲。暂不计手续费和滑点，毛利约为 <code>(1.0853 − 1.0851) × 100,000 = 20 USD</code>。</span></div>
+        <div class="deal-row"><b>平盘</b><span>客户买入欧元后，平台形成欧元空头敞口；在市场买回欧元，把风险降到限额内。平盘不等于每笔客户订单都立即一一对冲，也可先内部撮合相反方向的客户流。</span></div>
+      </div>
+    </section>
+
+    <section id="data">
+      <header class="section-head"><div class="section-no">03 / DATA</div><div><h2>一行行情数据，先过五类校验</h2><p class="section-desc">FX 近乎全天连续交易，但周末、节假日和不同市场时段仍有正常空档。先统一时区和交易日历，再判断“缺失”；否则会把正常休市误报成数据事故。</p></div></header>
+      <div class="pipeline">
+        <div class="flow" aria-label="FX 数据与模型流程">
+          <div class="flow-step"><b>01</b><strong>原始接入</strong><span>供应商、交易系统、支付订单</span></div>
+          <div class="flow-step"><b>02</b><strong>口径统一</strong><span>UTC、币对方向、精度、字段</span></div>
+          <div class="flow-step"><b>03</b><strong>质量校验</strong><span>价格、时间、重复、跨源一致</span></div>
+          <div class="flow-step"><b>04</b><strong>特征表</strong><span>收益率、点差、波动、时效</span></div>
+          <div class="flow-step"><b>05</b><strong>标签表</strong><span>故障、人工复核、业务结果</span></div>
+          <div class="flow-step"><b>06</b><strong>训练回测</strong><span>只用当时可见数据</span></div>
+          <div class="flow-step"><b>07</b><strong>跑批 / 服务</strong><span>分数、原因码、阈值</span></div>
+          <div class="flow-step"><b>08</b><strong>监控回流</strong><span>漂移、误报、漏报、Bad Case</span></div>
+        </div>
+        <div class="schema"><b>QUOTE SCHEMA</b><code>event_ts · receive_ts · symbol · bid · ask · provider · depth / volume · quote_id · ingest_batch</code></div>
+        <div class="schema"><b>MODEL TABLE</b><code>symbol · minute · mid · spread_pips · return_1m · vol_30m · quote_age_ms · gap_ms · cross_source_dev · label</code></div>
+      </div>
+      <div class="checks">
+        <div class="check"><strong>准确性</strong><span><code>bid &gt; ask</code> 必错；与可信来源偏差过大需复核。</span></div>
+        <div class="check"><strong>完整性</strong><span>按币对 × 市场时段看缺口，不只算整表非空率。</span></div>
+        <div class="check"><strong>及时性</strong><span><code>receive_ts − event_ts</code> 衡量报价到达延迟。</span></div>
+        <div class="check"><strong>唯一性</strong><span>用 provider + quote_id 去重；重复到达不等于新行情。</span></div>
+        <div class="check"><strong>一致性</strong><span>统一 UTC、币对方向和小数精度，再做跨源比较。</span></div>
+      </div>
+      <div class="code-pair">
+        <article class="code-card"><h3>SQL · 去重并生成逐笔特征</h3><pre>WITH q AS (
+  SELECT *, (bid + ask) / 2 AS mid,
+    (ask - bid) * 10000 AS spread_pips,
+    EXTRACT(EPOCH FROM (receive_ts-event_ts))*1000 AS age_ms,
+    ROW_NUMBER() OVER (
+      PARTITION BY provider, quote_id ORDER BY receive_ts
+    ) AS rn
+  FROM fx_quote_raw
+  WHERE bid &gt; 0 AND ask &gt;= bid
+)
+SELECT *, LN(mid / LAG(mid) OVER (
+  PARTITION BY symbol, provider ORDER BY event_ts
+)) AS return_1
+FROM q WHERE rn = 1;</pre><p>教学示例使用 EUR/USD 的 pip 换算；生产中需按币对维护 pip_size，并处理乱序与迟到数据。</p></article>
+        <article class="code-card"><h3>Python · 按时间训练与定阈值</h3><pre>features = ["return_1", "spread_pips",
+            "age_ms", "cross_source_dev"]
+
+train = df[df.event_ts &lt; "2026-07-01"]
+valid = df[df.event_ts.between("2026-07-01", "2026-07-31")]
+test  = df[df.event_ts &gt;= "2026-08-01"]
+
+model.fit(train[features])
+valid_score = -model.score_samples(valid[features])
+threshold = np.quantile(valid_score, 0.999)
+test["pred"] = -model.score_samples(test[features]) &gt;= threshold</pre><p>阈值在验证集确定，测试集只验收；上线阈值还要结合误报处理成本和漏报损失。</p></article>
+      </div>
+      <p class="note">日常报表至少按币对、供应商、小时切片：记录行数、缺失率、重复率、负点差数、P95 延迟、价格异常数和跨源偏差。总体均值会掩盖单一币对或单个数据源的事故。</p>
+    </section>
+
+    <section id="case">
+      <header class="section-head"><div class="section-no">04 / CASE</div><div><h2>完整案例：识别一条错误行情</h2><p class="section-desc">先做规则基线，再决定是否上模型。错误行情是“市场数据本身不可信”；异常交易是“订单或账户行为可疑”，两者不能共用一套标签。</p></div></header>
+      <div class="split-alert">
+        <article class="alert-type"><b>A · 本案例</b><strong>行情异常</strong><p>输入是报价流；识别坏点、陈旧报价、重复、跨源偏离和点差突增。标签来自供应商事故、跨源核验和人工复核。</p></article>
+        <article class="alert-type transaction"><b>B · 另一任务</b><strong>异常交易</strong><p>输入是订单、账户与设备行为；识别异常金额、频率、地域、账户关系或偏离历史习惯。需要合规规则和调查结果，不能只看价格。</p></article>
+      </div>
+      <article class="case">
+        <header class="case-title"><h3>EUR/USD · 1 分钟报价 · Provider A</h3><span>以下数字为教学示例</span></header>
+        <div class="case-body">
+          <div class="case-panel">
+            <h3>1. 看到什么</h3>
+            <div class="ticks">
+              <div class="tick head"><span>TIME</span><span>BID</span><span>ASK</span><span>MID</span></div>
+              <div class="tick"><span>10:29</span><span>1.0849</span><span>1.0851</span><span>1.0850</span></div>
+              <div class="tick bad"><span>10:30</span><span>1.0948</span><span>1.0952</span><span>1.0950</span></div>
+              <div class="tick"><span>10:31</span><span>1.0850</span><span>1.0852</span><span>1.0851</span></div>
+            </div>
+            <p class="note">10:30 突然上跳，下一分钟又恢复；同时 Provider B/C 的中位数仍为 1.08515。需要判断这是真实行情还是 A 源坏点。</p>
+          </div>
+          <div class="case-panel">
+            <h3>2. 把现象变成特征</h3>
+            <div class="calc-list">
+              <div class="calc"><b>1 分钟对数收益率</b><span>ln(1.0950 / 1.0850) = 0.00917 ≈ 0.917%</span></div>
+              <div class="calc"><b>点差</b><span>(1.0952 − 1.0948) × 10,000 = 4 pips</span></div>
+              <div class="calc"><b>跨源偏差</b><span>|1.0950 − 1.08515| × 10,000 = 98.5 pips</span></div>
+              <div class="calc"><b>稳健异常分</b><span>0.00917 / (1.4826 × MAD 0.00010) ≈ 61.9</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="case-panel">
+          <h3>3. 规则、模型和人工怎样配合</h3>
+          <div class="decision">
+            <div><b>规则基线</b><span>跨源偏差 &gt; 10 pips，且单源独有 → 立即告警或降权。</span></div>
+            <div><b>模型补充</b><span>把收益、点差倍数、延迟、缺口、跨源偏差输入 Isolation Forest；有稳定标签后再试树模型。</span></div>
+            <div><b>人工闭环</b><span>结合新闻、其他数据源和供应商状态复核；确认后写入 label 与 reason_code。</span></div>
+          </div>
+          <p class="note">“10:31 恢复原位”可用于事后确认标签，但 10:30 实时告警时还看不到未来。把它放进在线特征就是数据泄漏。</p>
+        </div>
+        <div class="case-result"><strong>输出：</strong><code>anomaly_score=0.98 · action=downweight_provider_a · reason=cross_source_spike</code>。下游聚合价临时降低 A 源权重，而不是让模型直接修改成交记录。</div>
+      </article>
+    </section>
+
+    <section id="evaluation">
+      <header class="section-head"><div class="section-no">05 / EVALUATION</div><div><h2>模型怎么训练，结果怎么算好</h2><p class="section-desc">时间序列不能随机打乱后切分。训练只能看过去，验证集用于选模型和阈值，测试集只做最后一次验收；上线后还要持续监控。</p></div></header>
+      <div class="model-grid">
+        <article class="model-card"><span class="tag">BASELINE</span><h3>规则 / 统计阈值</h3><p>滚动中位数、MAD、跨源偏差和业务限额。透明、上线快，适合先验证问题是否真实存在。</p><div class="use">适合：坏点、负点差、数据延迟、硬性风控规则</div></article>
+        <article class="model-card"><span class="tag">NO LABEL</span><h3>无监督异常模型</h3><p>Isolation Forest 学“多数正常样本”的分布，给少见组合更高异常分；它只说明少见，不自动等于错误。</p><div class="use">适合：标签稀缺、先缩小人工排查范围</div></article>
+        <article class="model-card"><span class="tag">WITH LABEL</span><h3>监督学习模型</h3><p>用已复核的异常 / 正常样本训练分类器。重点是标签定义、类别不平衡和跨时间稳定性。</p><div class="use">适合：标签口径稳定、异常模式可重复</div></article>
+      </div>
+      <div class="time-split" aria-label="按时间切分数据"><div class="train">1–6 月 · TRAIN</div><div class="valid">7 月 · VALID</div><div class="test">8 月 · TEST</div></div>
+      <div class="metric-case">
+        <article class="matrix"><h3>测试集：100,000 条，真实异常 100 条</h3><div class="matrix-grid"><span class="axis"></span><span class="axis">真实异常</span><span class="axis">真实正常</span><span class="axis">模型报异常</span><span class="good">80</span><span class="warn">40</span><span class="axis">模型报正常</span><span class="warn">20</span><span>99,860</span></div></article>
+        <article class="metrics">
+          <h3>不是只看准确率</h3>
+          <div class="metric-row"><b>精确率 Precision</b><span><code>80 / (80 + 40) = 66.7%</code> · 报出来的告警有多少是真的</span></div>
+          <div class="metric-row"><b>召回率 Recall</b><span><code>80 / (80 + 20) = 80%</code> · 真异常抓住了多少</span></div>
+          <div class="metric-row"><b>准确率 Accuracy</b><span><code>99,940 / 100,000 = 99.94%</code> · 看似很高，但异常极少时会误导</span></div>
+          <div class="metric-row"><b>业务指标</b><span>误报 40 条、漏报 20 条；还要看每日误报量、检测延迟与损失金额</span></div>
+        </article>
+      </div>
+      <div class="pitfalls">
+        <div class="pitfall"><b>未来函数</b><span>用未来价格、事后标签或完整日统计预测当下。</span></div>
+        <div class="pitfall"><b>成本漏算</b><span>策略回测未计点差、手续费、滑点和成交失败。</span></div>
+        <div class="pitfall"><b>基线缺失</b><span>复杂模型没超过“上一期波动率”或简单规则。</span></div>
+        <div class="pitfall"><b>只看均值</b><span>总体变好，但某币对、时段或数据源明显退化。</span></div>
+      </div>
+      <p class="note">若预测波动率，可看 MAE / RMSE 并对比“沿用上一窗口波动率”的朴素基线；若输出交易策略，还要看净 P&amp;L、最大回撤、换手率和含成本后的稳定性。模型分数高不等于一定赚钱。</p>
+    </section>
+
+    <section id="business">
+      <header class="section-head"><div class="section-no">06 / BUSINESS</div><div><h2>AI 最终接在哪些 FX 场景</h2><p class="section-desc">模型给概率、分数或建议；业务规则决定是否采用。涉及资金和合规时，必须保留限额、原因码、人工复核和回退方案。</p></div></header>
+      <div class="scene-table">
+        <div class="scene-row head"><div>场景</div><div>输入</div><div>模型输出</div><div>落地与边界</div></div>
+        <div class="scene-row"><div class="scene-name"><b>行情质量监控</b><span>Data QA</span></div><div>多源 Bid/Ask、延迟、缺口</div><div>异常分、数据源权重、原因码</div><div class="guard">可隔离坏源；不可改写原始审计记录</div></div>
+        <div class="scene-row"><div class="scene-name"><b>对客报价辅助</b><span>Pricing</span></div><div>市场价、波动、流动性、客户与交易规模</div><div>建议点差、报价有效期、置信度</div><div class="guard">受最小点差、额度、合规与人工策略约束</div></div>
+        <div class="scene-row"><div class="scene-name"><b>平盘辅助</b><span>Hedging</span></div><div>净敞口、客户流、市场深度、成本</div><div>对冲数量 / 时机建议</div><div class="guard">不能突破币种、金额和损失限额</div></div>
+        <div class="scene-row"><div class="scene-name"><b>异常交易识别</b><span>Risk</span></div><div>账户、订单、设备、地域、历史行为</div><div>风险分、触发原因、复核优先级</div><div class="guard">高风险不等于违规；需规则与调查闭环</div></div>
+        <div class="scene-row"><div class="scene-name"><b>分析 Agent</b><span>Copilot</span></div><div>数据字典、SQL、日报、模型监控</div><div>异常摘要、查询草稿、归因线索</div><div class="guard">引用来源并可复算；不直接下单或改库</div></div>
+      </div>
+      <div class="deploy-loop"><div class="deploy-step"><b>01</b><span>离线回测</span></div><div class="deploy-step"><b>02</b><span>Shadow 只观察</span></div><div class="deploy-step"><b>03</b><span>人工复核</span></div><div class="deploy-step"><b>04</b><span>小流量 / Champion-Challenger</span></div><div class="deploy-step"><b>05</b><span>监控效果与漂移</span></div><div class="deploy-step"><b>06</b><span>可回退后再扩大</span></div></div>
+      <p class="note">交易场景的 A/B Test 不能机械照搬互联网按钮实验。市场随时间变化，两个组未必面对相同环境；更稳妥的顺序通常是同历史窗口回测 → 影子运行 → 同期 Champion-Challenger → 受控放量。</p>
+    </section>
+
+    <section id="transfer">
+      <header class="section-head"><div class="section-no">07 / TRANSFER</div><div><h2>音频数据经验怎样迁移到 FX</h2><p class="section-desc">可迁移的是数据方法，不是领域结论。FX 比音频多了实时性、时间泄漏、交易成本和资金风险；这些是必须补齐的边界。</p></div></header>
+      <div class="transfer-table">
+        <div class="transfer-row head"><div>已有数据经验</div><div>FX 中的对应工作</div><div>需要新增的理解</div></div>
+        <div class="transfer-row"><div><b>Audio ID / 批次版本</b></div><div>quote_id / order_id / source batch</div><div>事件时间与到达时间要分开，支持重放与审计</div></div>
+        <div class="transfer-row"><div><b>音质规则与跨源清洗</b></div><div>Bid/Ask、延迟、缺口、跨源偏差</div><div>交易时段与行情变化会改变正常阈值</div></div>
+        <div class="transfer-row"><div><b>特征抽取与批量跑批</b></div><div>收益率、波动率、点差、敞口特征</div><div>任何特征必须确认预测时点是否已经可见</div></div>
+        <div class="transfer-row"><div><b>固定评测集 / Bad Case</b></div><div>时间留出集、误报漏报、异常原因码</div><div>按币对、时段、数据源切片，并换算业务成本</div></div>
+        <div class="transfer-row"><div><b>人工听审</b></div><div>分析师 / 风控复核</div><div>建立一致的标签口径，而不是把“少见”直接标成“违规”</div></div>
+      </div>
+      <div class="ramp">
+        <div class="ramp-step"><b>第 1 阶段</b><strong>手算一笔 FX 交易</strong><span>币对、Bid/Ask、pip、点差、客户成交、平盘和毛利。</span></div>
+        <div class="ramp-step"><b>第 2 阶段</b><strong>做一张可信特征表</strong><span>SQL 清洗分钟行情；检查时区、重复、延迟和跨源偏差。</span></div>
+        <div class="ramp-step"><b>第 3 阶段</b><strong>跑通异常识别</strong><span>规则基线 → Isolation Forest → 标签稳定后监督模型。</span></div>
+        <div class="ramp-step"><b>第 4 阶段</b><strong>交付完整报告</strong><span>时间回测、指标计算、Bad Case、阈值建议、上线监控和回退。</span></div>
+      </div>
+      <div class="minimum"><b>面试前最低验收</b><span>能解释一笔报价；能写出行情表主键与校验；能说明为什么不能随机切分；能手算 Precision / Recall；能区分行情异常与异常交易；能说清模型如何进入 Shadow、监控和回退。</span></div>
+      <div class="refs">参考资料： <a href="https://www.bis.org/publications/202509-commentary-otc-derivatives">BIS 2025 全球 FX 市场调查</a><a href="https://www.bis.org/publications/qr-201912/fx-trade-execution-complex-and-highly-fragmented">BIS：FX 交易执行与客户报价</a><a href="https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html">ECB 欧元参考汇率</a><a href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.TimeSeriesSplit.html">TimeSeriesSplit</a><a href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.IsolationForest.html">Isolation Forest</a><a href="https://www.federalreserve.gov/frrs/guidance/supervisory-guidance-on-model-risk-management.htm">Federal Reserve：模型风险管理</a><a href="https://www.nist.gov/itl/ai-risk-management-framework">NIST AI RMF</a></div>
+    </section>
+    </div>
+
+    <div class="tab-panel" id="ai-panel" role="tabpanel" aria-labelledby="ai-tab" hidden>
+      <section id="ai-overview">
+        <header class="section-head"><div class="section-no">A1 / OVERVIEW</div><div><h2>JD 里的 AI，其实是两条路线</h2><p class="section-desc">第一条是用专用模型处理 FX 数值数据，是岗位核心；第二条是让通用 Agent 调用数据、模型和报表工具，负责把工作流程执行完。</p></div></header>
+        <div class="ai-summary">
+          <article class="plain-card"><span class="eyebrow">CORE · PREDICTION</span><h3>传统机器学习：负责算结果</h3><p>从历史行情、订单和账户行为中学习规律，输出行情异常概率、未来波动、交易风险分或建议点差。常用的可能只是 Isolation Forest、LightGBM、XGBoost 或时间序列模型，并不一定需要大语言模型。</p><div class="output-line"><b>示例输出</b>　高波动概率 76% · 行情异常概率 8% · 建议点差 2 → 3 pips</div></article>
+          <article class="plain-card"><span class="eyebrow">WORKFLOW · EXECUTION</span><h3>通用 Agent：负责调用和组织</h3><p>理解“检查今日 EUR/USD”这样的自然语言任务，按照既定流程查询数据、调用异常模型、执行回测、拉取 Bad Case，最后生成可复核的报告。它不替代数值模型，也不应绕过交易与风控系统。</p><div class="output-line"><b>示例输出</b>　Provider A 10:30 出现 17 条跨源异常，建议降低聚合权重并人工复核</div></article>
+        </div>
+        <div class="boundary"><strong>一句话：</strong>专用模型负责“算得准”，Skill 负责“告诉 Agent 怎么干”，MCP / API 负责“让 Agent 能调用系统”，Agent 负责“把任务执行完”，风控规则负责“限制它不能乱干”。</div>
+      </section>
+
+      <section id="ai-stack">
+        <header class="section-head"><div class="section-no">A2 / STACK</div><div><h2>五个组件，各自解决一个问题</h2><p class="section-desc">把所有东西都叫 AI 会失去边界。下面这五层组合起来，才是一套能落地、能审计的 FX AI 应用。</p></div></header>
+        <div class="stack-map">
+          <article class="stack-card"><b>01 · 专用模型</b><strong>预测器</strong><span>根据数值特征给出预测、概率或异常分。</span><code>score_fx_anomaly(features)</code></article>
+          <article class="stack-card"><b>02 · SKILL</b><strong>工作手册</strong><span>保存稳定术语、检查顺序、阈值原则和报告格式。</span><code>先统一 UTC，再检查 Bid/Ask</code></article>
+          <article class="stack-card"><b>03 · MCP / API</b><strong>工具接口</strong><span>连接行情库、模型服务、回测系统和审批系统。</span><code>query_quotes() · run_backtest()</code></article>
+          <article class="stack-card"><b>04 · AGENT</b><strong>操作员</strong><span>理解目标，选择工具，串联步骤并解释结果。</span><code>查询 → 分析 → 复核 → 报告</code></article>
+          <article class="stack-card"><b>05 · 风控系统</b><strong>刹车</strong><span>控制额度、权限、人工审批、日志和回退。</span><code>不允许 Agent 直接改原始数据</code></article>
+        </div>
+        <p class="note">MCP 是标准化连接方式，不等于行业知识，也不等于预测模型。它让模型能够调用外部工具；实际的价格计算、风控判断和交易执行仍由明确的业务服务完成。</p>
+      </section>
+
+      <section id="ai-run">
+        <header class="section-head"><div class="section-no">A3 / RUN</div><div><h2>一个 Agent 怎样完成每日 FX 检查</h2><p class="section-desc">用户只给任务目标，Agent 根据 Skill 拆步骤；实时数据来自 MCP / API，异常判断来自专用模型，最终结果保留数据来源与计算过程。</p></div></header>
+        <div class="agent-flow">
+          <div class="agent-step"><b>01</b><strong>读取任务</strong><span>检查今日 EUR/USD 数据与模型</span></div>
+          <div class="agent-step"><b>02</b><strong>查询数据</strong><span>通过 MCP 读取行情和运行日志</span></div>
+          <div class="agent-step"><b>03</b><strong>执行质检</strong><span>缺失、重复、负点差、P95 延迟</span></div>
+          <div class="agent-step"><b>04</b><strong>调用模型</strong><span>异常分、跨源偏差、波动预测</span></div>
+          <div class="agent-step"><b>05</b><strong>拉取 Bad Case</strong><span>定位币对、时段、数据源与原因码</span></div>
+          <div class="agent-step"><b>06</b><strong>生成报告</strong><span>结论、证据、建议、人工待办</span></div>
+        </div>
+        <div class="deal">
+          <div class="deal-row"><b>输入任务</b><span>“检查今天 EUR/USD 的数据质量和异常模型运行情况。”</span></div>
+          <div class="deal-row"><b>Agent 输出</b><span>接入 864 万条报价；重复率 0.03%；Provider A 在 10:30 出现 17 条跨源异常；模型 Recall 从 81% 降至 74%，下降集中在亚洲早盘。</span></div>
+          <div class="deal-row"><b>执行边界</b><span>Agent 可以生成“降低 A 源权重”的待审批建议，但不能直接删除原始行情、修改成交记录或自主下单。</span></div>
+        </div>
+      </section>
+
+      <section id="ai-placement">
+        <header class="section-head"><div class="section-no">A4 / PLACEMENT</div><div><h2>行业知识不应该全部塞进 Skill</h2><p class="section-desc">内容放在哪里，取决于它是否稳定、是否实时、是否需要计算，以及是否会产生真实业务动作。</p></div></header>
+        <div class="placement">
+          <div class="place"><b>稳定定义与 SOP → Skill</b><span>币对方向、字段口径、检查顺序、报告模板、升级规则。</span></div>
+          <div class="place"><b>实时数据 → 数据库 + MCP / API</b><span>行情、订单、敞口、模型运行状态不能写死在 Skill。</span></div>
+          <div class="place"><b>大量内部材料 → 知识库 / 检索</b><span>制度、历史复盘、供应商文档按需检索，并返回来源。</span></div>
+          <div class="place"><b>预测与打分 → 机器学习模型</b><span>异常概率、波动预测、风险评分和建议点差。</span></div>
+          <div class="place"><b>多步骤协调 → Agent</b><span>理解任务、选择工具、检查中间结果、整理报告。</span></div>
+          <div class="place"><b>真实动作 → 业务系统 + 审批</b><span>报价、平盘、冻结账户等操作必须受权限、限额和审计控制。</span></div>
+        </div>
+      </section>
+
+      <section id="ai-jd">
+        <header class="section-head"><div class="section-no">A5 / JD</div><div><h2>回到岗位：面试重点不是只讲 Agent</h2><p class="section-desc">该 JD 把 Agent 场景列为可选能力之一，但把训练、调优、回测、异常识别和落地验证写成核心职责。只讲 Skill / MCP，会漏掉最重要的数值建模部分。</p></div></header>
+        <div class="priority">
+          <div><b>优先级 01</b><strong>数据与特征</strong><span>行情和订单怎么清洗、对齐、校验，特征何时可见。</span></div>
+          <div><b>优先级 02</b><strong>建模与回测</strong><span>预测目标、标签、时间切分、基线、误报漏报与成本。</span></div>
+          <div><b>优先级 03</b><strong>跑批与落地</strong><span>模型怎样进入 Shadow、监控漂移、回流 Bad Case 和安全回退。</span></div>
+          <div><b>优先级 04</b><strong>Agent 自动化</strong><span>用 Skill 固化流程，用 MCP 连接数据与模型，自动完成分析报告。</span></div>
+        </div>
+        <div class="answer-box"><b>可以直接用于面试的表述</b>先建立可信的 FX 数据和特征表，训练行情异常、波动识别等专用模型，再通过 MCP 将行情查询、模型推理和回测能力提供给 Agent；用 Skill 固化分析流程、业务规则和报告格式，让 Agent 自动完成日常排查与结果整理。涉及报价和平盘时，模型和 Agent 只提供建议，最终仍受限额、风控规则和人工审批约束。</div>
+        <div class="refs">产品机制参考： <a href="https://developers.openai.com/api/reference/cli/resources/responses/methods/create">OpenAI Responses API：内置工具、MCP 与自定义函数</a></div>
+      </section>
+    </div>
+  </main>
+  <footer><div class="wrap">FX 数据分析与 AI 应用 · 新人学习页 · 示例数字仅用于演示计算方法</div></footer>
+  <script>
+    (() => {
+      const guideIds = new Set(["role", "basics", "data", "case", "evaluation", "business", "transfer"]);
+      const aiIds = new Set(["ai-overview", "ai-stack", "ai-run", "ai-placement", "ai-jd"]);
+      const guidePanel = document.getElementById("guide-panel");
+      const aiPanel = document.getElementById("ai-panel");
+      const guideNav = document.getElementById("guide-nav");
+      const aiNav = document.getElementById("ai-nav");
+      const buttons = [...document.querySelectorAll(".tab-btn")];
+
+      function activate(name, moveToTop = false) {
+        const showAI = name === "ai";
+        guidePanel.hidden = showAI;
+        aiPanel.hidden = !showAI;
+        guideNav.hidden = showAI;
+        aiNav.hidden = !showAI;
+        buttons.forEach((button) => button.setAttribute("aria-selected", String(button.dataset.tab === name)));
+        if (moveToTop) {
+          history.replaceState(null, "", showAI ? "#ai-overview" : "#role");
+          window.scrollTo(0, 0);
+        }
+      }
+
+      function activateFromHash() {
+        const id = location.hash.slice(1);
+        if (aiIds.has(id)) activate("ai");
+        else if (guideIds.has(id)) activate("guide");
+      }
+
+      buttons.forEach((button) => button.addEventListener("click", () => activate(button.dataset.tab, true)));
+      window.addEventListener("hashchange", activateFromHash);
+      activateFromHash();
+    })();
+  </script>
+</body>
+</html>
