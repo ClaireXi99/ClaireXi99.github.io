@@ -103,6 +103,18 @@
     .closing{margin-top:10px;padding:10px 13px;border-left:3px solid var(--blue);background:var(--blue-soft);color:#385468;font-size:13px}
     .protocol{display:grid;grid-template-columns:90px 1fr;gap:12px;margin-top:10px;padding:9px 12px;border:1px solid var(--line);border-radius:6px;background:#fff;color:#485762;font-size:12px}.protocol b{color:var(--blue);font-size:10px;letter-spacing:.05em}
     .references{padding-top:18px;color:var(--muted);font-size:11px}.references a{margin-right:12px;color:#536f82}
+    .review-summary{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .review-panel{padding:14px 15px;border:1px solid var(--line);border-radius:8px;background:#fff}
+    .review-panel h3{display:flex;align-items:center;gap:8px}.review-panel h3 span{color:var(--blue);font-size:10px;font-weight:800;letter-spacing:.06em}
+    .review-panel p{color:var(--sub);font-size:12px;line-height:1.5}
+    .snapshot-stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;margin:9px 0}
+    .snapshot-stat{padding:8px 9px;border:1px solid var(--line);border-radius:6px;background:#fff}
+    .snapshot-stat b{display:block;color:var(--blue);font-size:15px}.snapshot-stat small{display:block;margin-top:1px;color:var(--muted);font-size:9px;line-height:1.35}
+    .code-grid{display:grid;grid-template-columns:1.25fr .75fr;gap:9px}
+    .mini-code{margin:0;padding:11px 12px;border:1px solid var(--line);border-radius:7px;background:#202a33;color:#dbe5eb;font:10px/1.58 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;white-space:pre-wrap;overflow-x:auto}
+    .finding-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:9px}
+    .finding{padding:9px 10px;border:1px solid var(--line);border-radius:6px;background:#fff}
+    .finding b{display:block;color:var(--ink);font-size:11px}.finding span{display:block;margin-top:3px;color:var(--muted);font-size:10px;line-height:1.43}
     footer{padding:17px 0 26px;border-top:1px solid var(--line);color:var(--muted);font-size:11px;background:#fff}
 
     @media(max-width:1100px){.source-grid{grid-template-columns:repeat(4,1fr)}}
@@ -110,6 +122,7 @@
       .evolution{grid-template-columns:repeat(2,1fr)}
       .batch:nth-child(2){border-right:0}.batch:nth-child(-n+2){border-bottom:1px solid var(--line)}.batch:nth-child(2)::after{display:none}
       .change-grid,.stem-layout,.eval-layout{grid-template-columns:1fr}.source-grid{grid-template-columns:repeat(3,1fr)}.task-row{grid-template-columns:130px 1fr}.task-data{grid-column:2}.meta-row{grid-template-columns:130px 1fr}
+      .finding-grid{grid-template-columns:repeat(2,1fr)}
     }
     @media(max-width:640px){
       .wrap{width:min(100% - 24px,1160px)}.hero{padding:20px 0}.nav .wrap{gap:20px}
@@ -120,6 +133,7 @@
       .output-grid{grid-template-columns:1fr;padding:13px}.contract{padding:13px}.batch{border-right:0;border-bottom:1px solid var(--line)}.batch:last-child{border-bottom:0}.batch::after{display:none!important}
       .stem-flow{grid-template-columns:1fr}.stem-arrow{padding:9px;transform:rotate(90deg)}.metric-list{grid-template-columns:1fr}
       .protocol{grid-template-columns:1fr;gap:4px}.loop{grid-template-columns:1fr;text-align:left}.loop-step{text-align:left;padding:0 0 12px;border-bottom:1px solid var(--line)}.loop-step:last-child{padding-bottom:0;border-bottom:0}.loop-step::after{display:none}
+      .review-summary,.code-grid{grid-template-columns:1fr}.snapshot-stats{grid-template-columns:repeat(2,1fr)}.finding-grid{grid-template-columns:1fr}
     }
     @media print{body{background:#fff}.nav{display:none}.hero{padding:24px 0}.system,.change-card{box-shadow:none}section{break-inside:avoid}.change-card{break-inside:avoid}}
   </style>
@@ -132,7 +146,7 @@
   </header>
 
   <nav class="nav" aria-label="页内导航"><div class="wrap">
-    <a href="#tasks">训练任务</a><a href="#pipeline">数据流</a><a href="#changes">关键改动</a><a href="#scale">数据演进</a><a href="#accompaniment">伴奏样本</a><a href="#evaluation">评测闭环</a>
+    <a href="#tasks">训练任务</a><a href="#pipeline">数据流</a><a href="#changes">关键改动</a><a href="#scale">数据演进</a><a href="#accompaniment">伴奏样本</a><a href="#evaluation">评测闭环</a><a href="#code-review">Suno 代码</a>
   </div></nav>
 
   <main class="wrap">
@@ -242,6 +256,53 @@
       <div class="loop" aria-label="评测闭环"><div class="loop-step"><b>01</b><span>冻结测试集</span></div><div class="loop-step"><b>02</b><span>自动批量筛查</span></div><div class="loop-step"><b>03</b><span>版本盲评</span></div><div class="loop-step"><b>04</b><span>Bad Case 归因</span></div><div class="loop-step"><b>05</b><span>回流对应处理节点</span></div></div>
       <div class="closing">评测结果按数据批次、Pipeline 版本、模型版本和样本标签切片，避免只看总体均值掩盖语种、曲风、时长或来源问题。</div>
       <div class="references">方法组件： <a href="https://github.com/tencent-ailab/MuQ">MuQ-MuLan</a><a href="https://github.com/ASLP-lab/SongFormer">SongFormer</a><a href="https://github.com/mir-aidj/all-in-one">All-In-One</a><a href="https://github.com/facebookresearch/demucs">Demucs</a><a href="https://arxiv.org/abs/2309.02612">BS-RoFormer</a><a href="https://suno.com/blog/stem-separation-updates">Suno 12-stem 公开产品</a></div>
+    </section>
+
+    <section id="code-review">
+      <header class="section-head"><div class="section-no">07 / CODE REVIEW</div><div><h2>Suno 相关代码：数据采集与数据模型</h2><p class="section-desc">正在解读 Suno 相关本地完整代码，本次整理聚焦 YouTube 音频 / 字幕采集与 <code>data_model.py</code> 中的转录数据结构。</p></div></header>
+      <div class="review-summary">
+        <article class="review-panel"><h3><span>PIPELINE 01</span>YouTube 音频与字幕采集</h3><p>读取成功的搜索记录 → 汇总候选视频 → 按 YouTube ID 去重 → 保留 10–3,600 秒 → 固定种子打乱 → 分块并行下载音频、全部语言字幕和 Meta → 失败重试并写入 JSONL。</p></article>
+        <article class="review-panel"><h3><span>SCHEMA 02</span>统一转录 Token</h3><p><code>{value, type, speaker_id?, start_s?, end_s?, metadata?}</code>；支持文本 / 特殊标签、时间戳、多说话人、说话人匿名化、相邻轮次合并、JSON 序列化与时间顺序校验。</p></article>
+      </div>
+      <div class="snapshot-stats" aria-label="代码中的运行规模">
+        <div class="snapshot-stat"><b>约 46.6 万</b><small>唯一视频</small></div><div class="snapshot-stat"><b>约 2.95 万</b><small>时长异常被过滤</small></div><div class="snapshot-stat"><b>约 7.8 万小时</b><small>候选音频总时长</small></div><div class="snapshot-stat"><b>100</b><small>并行下载进程</small></div><div class="snapshot-stat"><b>3 次</b><small>单任务最大重试</small></div>
+      </div>
+      <div class="code-grid" aria-label="代码逻辑伪代码">
+        <pre class="mini-code"><code>records = read_jsonl("videos_urls.jsonl")
+videos = unique_by_id(flatten(
+    r.search_results for r in records if r.success
+))
+videos = [v for v in videos if 10 &lt;= duration(v) &lt;= 3600]
+shuffle(videos, seed=6006)
+
+for chunk in chunks(videos, size=1000):
+    result = parallel_map(
+        download_audio_and_subtitles,
+        chunk, workers=100, timeout=120
+    )
+    append_jsonl("audio_metas.jsonl",
+                 retry_failed(result, max_retries=3))</code></pre>
+        <pre class="mini-code"><code>Token = {
+  value, type,
+  speaker_id?,
+  start_s?, end_s?,
+  metadata?
+}
+
+tokens = parse_transcript(text)
+assert timestamps_monotonic(tokens)
+turns = group_adjacent_by_speaker(tokens)
+tokens = anonymize_speakers(tokens)
+tokens = drop_unused_metadata(tokens)</code></pre>
+      </div>
+      <div class="finding-grid">
+        <div class="finding"><b><code>worstaudio</code> 只说明采集策略</b><span>更像低成本拉取或初筛，不能据此判断最终训练音频使用最低质量。</span></div>
+        <div class="finding"><b>字幕是明确采集对象</b><span>主动获取多语言字幕，表明候选资产可能用于音频—文本配对或歌词 / 转录对齐。</span></div>
+        <div class="finding"><b>工程重点是可恢复性</b><span>JSONL、固定随机种子、分块、多进程、超时、重试、成功状态和失败原因保证任务可继续。</span></div>
+        <div class="finding"><b>当前模块聚焦采集前段</b><span>该采集模块未包含音频指纹去重、授权过滤、音质检测、语种识别或训练集污染检查。</span></div>
+        <div class="finding"><b>Schema 带有通用语音特征</b><span><code>speaker_turns</code>、说话人匿名化和 <code>[laughter]</code> 更像语音 / 播客 / 对白与歌词共用工具。</span></div>
+        <div class="finding"><b>凭据必须脱敏</b><span>代码中出现疑似明文代理凭据；对外展示需隐藏，原凭据应轮换。</span></div>
+      </div>
     </section>
   </main>
   <footer><div class="wrap">AI 音乐生成训练数据构建与评测 · 项目技术简报</div></footer>
