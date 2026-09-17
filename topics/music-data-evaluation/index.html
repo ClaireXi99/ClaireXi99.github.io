@@ -146,7 +146,7 @@
   </header>
 
   <nav class="nav" aria-label="页内导航"><div class="wrap">
-    <a href="#tasks">训练任务</a><a href="#pipeline">数据流</a><a href="#changes">关键改动</a><a href="#scale">数据演进</a><a href="#accompaniment">伴奏样本</a><a href="#evaluation">评测闭环</a><a href="#code-review">Suno 代码</a>
+    <a href="#tasks">训练任务</a><a href="#pipeline">数据流</a><a href="#implementation">工程实现</a><a href="#changes">关键改动</a><a href="#scale">数据演进</a><a href="#accompaniment">伴奏样本</a><a href="#evaluation">评测闭环</a><a href="#code-review">Suno 代码</a>
   </div></nav>
 
   <main class="wrap">
@@ -198,8 +198,63 @@
       </div>
     </section>
 
+    <section id="implementation">
+      <header class="section-head"><div class="section-no">03 / IMPLEMENTATION</div><div><h2>工程落地：分阶段加工与训练交付</h2><p class="section-desc">代码中的 Notebook 与批处理脚本按阶段组织；每步消费上一阶段产物并输出下一版数据，使长链路可以独立检查、局部重跑和回溯问题。</p></div></header>
+      <div class="system" aria-label="实际数据加工阶段">
+        <div class="system-band">
+          <div class="band-label"><span>TEXT FLOW<em>代码核验</em></span></div>
+          <div class="stage-wrap"><div class="stage-grid">
+            <div class="stage"><span class="stage-no">01</span><h3>歌曲粗筛</h3><p>先处理时长、文件可读性与基础质量门槛</p></div>
+            <div class="stage"><span class="stage-no">02</span><h3>歌词标准化</h3><p>空行、转义字符、乱码与非歌词 Meta</p></div>
+            <div class="stage"><span class="stage-no">03</span><h3>结构解析</h3><p>生成段落的 start / end / label</p></div>
+            <div class="stage"><span class="stage-no">04</span><h3>时间轴写回</h3><p>将结构标签转换时间戳并并入 LRC</p></div>
+            <div class="stage"><span class="stage-no">05</span><h3>歌词精筛</h3><p>括号、空段、字符集、时长与结构完整性</p></div>
+            <div class="stage"><span class="stage-no">06</span><h3>去重与语种</h3><p>去重后再做语种 / 中文方言候选筛选</p></div>
+            <div class="stage"><span class="stage-no">07</span><h3>训练格式</h3><p>Token 长度校验与最终样本组装</p></div>
+          </div></div>
+        </div>
+        <div class="system-band"><div class="band-label">STAGE DATA</div><div class="contract"><code>raw</code><i>→</i><code>coarse_filter</code><i>→</i><code>lyric_clean</code><i>→</i><code>structure_aligned</code><i>→</i><code>meta_clean</code><i>→</i><code>dedup_language</code><i>→</i><code>train_json</code></div></div>
+      </div>
+      <div class="snapshot-stats" aria-label="工程实现要点">
+        <div class="snapshot-stat"><b>数十万级</b><small>单批中间数据规模（脱敏）</small></div><div class="snapshot-stat"><b>Parquet</b><small>阶段产物与断点边界</small></div><div class="snapshot-stat"><b>Audio ID</b><small>跨步骤关联主键</small></div><div class="snapshot-stat"><b>LRC</b><small>歌词与结构时间轴</small></div><div class="snapshot-stat"><b>JSON</b><small>最终训练样本契约</small></div>
+      </div>
+      <div class="code-grid" aria-label="数据处理伪代码与训练样本结构">
+        <pre class="mini-code"><code>rules = load_rule_files()
+lyric = normalize(raw_lyric)
+lyric = drop_meta_and_intro(lyric, rules)
+
+segments = parse_structure(audio)
+aligned = insert_segments_by_timestamp(
+    lyric, segments  # start / end / label
+)
+
+if not lyric_quality_gate(aligned):
+    reject(sample_id)
+else:
+    save_stage(sample_id, aligned)</code></pre>
+        <pre class="mini-code"><code>sample = {
+  "id": audio_id,
+  "audio_path": audio_path,
+  "lyrics": aligned_lyrics,
+  "audio_quality": {
+    "sr": sample_rate,
+    "br": bit_rate,
+    "bit_depth": bit_depth,
+    "cutoff_khz": cutoff,
+    "spectral_flatness": flatness
+  },
+  "language": language,
+  "title": title,
+  "main_artist": singer,
+  "duration": duration
+}</code></pre>
+      </div>
+      <div class="closing">处理顺序遵循“低成本规则在前、模型推理与格式组装在后”：先减少明显无效样本，再执行结构、语种等处理，最终只向训练侧交付字段对齐、可读取的样本对象。</div>
+      <div class="protocol"><b>对外边界</b><span>仅展示脱敏后的阶段设计与字段契约；不公开代码照片、内部目录、运行账户或基础设施信息。</span></div>
+    </section>
+
     <section id="changes">
-      <header class="section-head"><div class="section-no">03 / CHANGES</div><div><h2>四项关键改动</h2><p class="section-desc">每项改动都从明确的 Bad Case 出发，在固定测试集上回归，并结合人工听审判断是否进入下一版训练数据。</p></div></header>
+      <header class="section-head"><div class="section-no">04 / CHANGES</div><div><h2>四项关键改动</h2><p class="section-desc">每项改动都从明确的 Bad Case 出发，在固定测试集上回归，并结合人工听审判断是否进入下一版训练数据。</p></div></header>
       <div class="change-grid">
         <article class="change-card">
           <div class="change-title"><div><h3>音乐—文本语义对齐</h3><p class="swap"><span class="old">CLAP3</span><i>→</i><span class="new">MuQ-MuLan</span></p></div></div>
@@ -223,7 +278,7 @@
     </section>
 
     <section id="scale">
-      <header class="section-head"><div class="section-no">04 / SCALE</div><div><h2>数据批次演进</h2><p class="section-desc">节奏是“拿到一批 → 清洗一批 → 训练回归一批”。下列数字为原始或筛选阶段的候选规模，不等同于最终训练集条数。</p></div></header>
+      <header class="section-head"><div class="section-no">05 / SCALE</div><div><h2>数据批次演进</h2><p class="section-desc">节奏是“拿到一批 → 清洗一批 → 训练回归一批”。下列数字为原始或筛选阶段的候选规模，不等同于最终训练集条数。</p></div></header>
       <div class="evolution">
         <article class="batch"><span class="batch-no">BATCH 01 · BASELINE</span><h3>供应商首批约 50 万</h3><p>供应商总候选约 400 万，首批先跑通接入、去重、质检、特征和 Manifest 交付。</p><div class="result">形成可重复运行的基线 Pipeline</div></article>
         <article class="batch gain-tidal"><span class="batch-no">BATCH 02 · HI-FI</span><h3>Qobuz + Tidal</h3><p>Qobuz 目录候选约 3,000 万 → 语种筛选约 800 万；Tidal 目录候选约 2,000 万 → 带歌词约 200 万 → 规则筛选约 115 万。</p><div class="result">第一阶段关键增益：同期回归中音质维度改善</div></article>
@@ -235,7 +290,7 @@
     </section>
 
     <section id="accompaniment">
-      <header class="section-head"><div class="section-no">05 / STEMS</div><div><h2>伴奏样本：从双轨到五类中间轨</h2><p class="section-desc">Suno 公开产品支持 12 类 stem 输出；项目仅参考其输出粒度，结合现有 checkpoint、标签体系和处理成本组织五类中间结果，并非复现 Suno 模型或训练方案。</p></div></header>
+      <header class="section-head"><div class="section-no">06 / STEMS</div><div><h2>伴奏样本：从双轨到五类中间轨</h2><p class="section-desc">Suno 公开产品支持 12 类 stem 输出；项目仅参考其输出粒度，结合现有 checkpoint、标签体系和处理成本组织五类中间结果，并非复现 Suno 模型或训练方案。</p></div></header>
       <div class="stem-layout">
         <article class="stem-panel">
           <h3>完整歌曲 → 多轨 → 伴奏目标</h3>
@@ -247,7 +302,7 @@
     </section>
 
     <section id="evaluation">
-      <header class="section-head"><div class="section-no">06 / EVALUATION</div><div><h2>固定评测与 Bad Case 回流</h2><p class="section-desc">自动指标负责大规模筛查和定位，版本盲评负责最终体验判断；同一版数据改动必须在固定测试集上对照。</p></div></header>
+      <header class="section-head"><div class="section-no">07 / EVALUATION</div><div><h2>固定评测与 Bad Case 回流</h2><p class="section-desc">自动指标负责大规模筛查和定位，版本盲评负责最终体验判断；同一版数据改动必须在固定测试集上对照。</p></div></header>
       <div class="eval-layout">
         <article class="eval-card"><h3>完整歌曲生成</h3><div class="metric-list"><div class="metric"><strong>音质与伪影</strong><span>MOS / 分维度听审</span></div><div class="metric"><strong>歌词完整性</strong><span>覆盖、漏唱、重复</span></div><div class="metric"><strong>段落结构</strong><span>边界、顺序、主副歌一致性</span></div><div class="metric"><strong>条件遵循</strong><span>Query、曲风、歌词对齐</span></div></div></article>
         <article class="eval-card"><h3>清唱配伴奏</h3><div class="metric-list"><div class="metric"><strong>目标干净度</strong><span>人声泄漏、分离伪影</span></div><div class="metric"><strong>时间对齐</strong><span>节拍与起止位置</span></div><div class="metric"><strong>和声兼容</strong><span>调性、和弦与旋律冲突</span></div><div class="metric"><strong>风格一致性</strong><span>Prompt 与成品听感</span></div></div></article>
@@ -259,7 +314,7 @@
     </section>
 
     <section id="code-review">
-      <header class="section-head"><div class="section-no">07 / CODE REVIEW</div><div><h2>Suno 相关代码：数据采集与数据模型</h2><p class="section-desc">正在解读 Suno 相关本地完整代码，本次整理聚焦 YouTube 音频 / 字幕采集与 <code>data_model.py</code> 中的转录数据结构。</p></div></header>
+      <header class="section-head"><div class="section-no">08 / CODE REVIEW</div><div><h2>Suno 相关代码：数据采集与数据模型</h2><p class="section-desc">正在解读 Suno 相关本地完整代码，本次整理聚焦 YouTube 音频 / 字幕采集与 <code>data_model.py</code> 中的转录数据结构。</p></div></header>
       <div class="review-summary">
         <article class="review-panel"><h3><span>PIPELINE 01</span>YouTube 音频与字幕采集</h3><p>读取成功的搜索记录 → 汇总候选视频 → 按 YouTube ID 去重 → 保留 10–3,600 秒 → 固定种子打乱 → 分块并行下载音频、全部语言字幕和 Meta → 失败重试并写入 JSONL。</p></article>
         <article class="review-panel"><h3><span>SCHEMA 02</span>统一转录 Token</h3><p><code>{value, type, speaker_id?, start_s?, end_s?, metadata?}</code>；支持文本 / 特殊标签、时间戳、多说话人、说话人匿名化、相邻轮次合并、JSON 序列化与时间顺序校验。</p></article>
